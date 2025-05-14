@@ -1,4 +1,5 @@
 import { Play } from "lucide-react";
+import { usePlayerStore } from "../store/AudioPlayerStore";
 
 type TrackCardProps = {
   title: string;
@@ -13,6 +14,16 @@ export default function TrackCard({
   cover,
   audio,
 }: TrackCardProps) {
+  const setTrack = usePlayerStore((state) => state.setTrack);
+
+  const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
+
+  const playAudio = (audio: string) => {
+    setIsPlaying(false); 
+    setTrack(audio); 
+    setIsPlaying(true); 
+  };
+
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded p-4 w-full sm:w-64 text-white shadow-xl hover:shadow-2xl transition-all duration-200">
       <img
@@ -27,7 +38,10 @@ export default function TrackCard({
           </h3>
           <p className="text-sm text-zinc-400 font-mono">{`by ${producer}`}</p>
         </div>
-        <button className="p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg">
+        <button
+          onClick={() => playAudio(audio)}
+          className="p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg"
+        >
           <Play size={24} />
         </button>
       </div>

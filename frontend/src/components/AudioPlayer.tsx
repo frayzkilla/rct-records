@@ -42,13 +42,39 @@ export default function AudioPlayer() {
   }, [setIsPlaying, isSeeking]);
 
   useEffect(() => {
+  const audio = audioRef.current;
+  if (!audio || !track) return;
+
+  audio.src = track;
+  setProgress(0);
+  setDuration(0);
+
+  const handleCanPlay = () => {
+    audio.play()
+      .then(() => {
+        setIsPlaying(true);
+      })
+      .catch((err) => {
+        console.warn("Autoplay failed:", err);
+      });
+  };
+
+  audio.addEventListener("canplay", handleCanPlay);
+
+  return () => {
+    audio.removeEventListener("canplay", handleCanPlay);
+  };
+}, [track]);
+
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (track) {
-      audio.src = track;
+    if (!isPlaying) {
+      audio.pause();
     }
-  }, [track]);
+  }, [isPlaying]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
