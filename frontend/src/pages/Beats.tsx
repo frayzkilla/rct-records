@@ -5,19 +5,19 @@ const beats = [
     title: "Simon Said",
     producer: "Frayz The Raw",
     cover: "/public/covers/frayztheraw_simonsaid.jpg",
-    audio: "/public/frayztheraw_simonsaid.mp3",
+    audio: "/frayztheraw_simonsaid.mp3",
   },
   {
     title: "Woah",
     producer: "Leftover",
     cover: "/public/covers/leftover_woah.jpg",
-    audio: "/public/leftover_woah.mp3",
+    audio: "/leftover_woah.mp3",
   },
   {
     title: "Van Two",
     producer: "Danny Local",
     cover: "/public/covers/dannylocal_vantwo.jpg",
-    audio: "/public/dannylocal_vantwo.mp3",
+    audio: "/dannylocal_vantwo.mp3",
   },
 ];
 

@@ -12,6 +12,8 @@ export default function AudioPlayer() {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [artist, setArtist] = useState("");
+  const [title, setTitle] = useState("");
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -42,30 +44,40 @@ export default function AudioPlayer() {
   }, [setIsPlaying, isSeeking]);
 
   useEffect(() => {
-  const audio = audioRef.current;
-  if (!audio || !track) return;
+    if (!track) return;
 
-  audio.src = track;
-  setProgress(0);
-  setDuration(0);
+    const fileName = track.split("/").pop()?.replace(".mp3", "") ?? "";
+    const [rawArtist, rawTitle] = fileName.split("_");
 
-  const handleCanPlay = () => {
-    audio.play()
-      .then(() => {
-        setIsPlaying(true);
-      })
-      .catch((err) => {
-        console.warn("Autoplay failed:", err);
-      });
-  };
+    setArtist(rawArtist || "Unknown Artist");
+    setTitle(rawTitle || "Unknown Title");
 
-  audio.addEventListener("canplay", handleCanPlay);
+    const audio = audioRef.current;
+    if (!audio || !track) return;
 
-  return () => {
-    audio.removeEventListener("canplay", handleCanPlay);
-  };
-}, [track]);
+    audio.src = track;
+    setProgress(0);
+    setDuration(0);
 
+    const handleCanPlay = () => {
+      if (isPlaying) {
+        audio
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.warn("Autoplay failed:", err);
+          });
+      }
+    };
+
+    audio.addEventListener("canplay", handleCanPlay);
+
+    return () => {
+      audio.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [track]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -110,6 +122,9 @@ export default function AudioPlayer() {
     const newProgress = value;
     const newTime = (newProgress / 100) * duration;
     audio.currentTime = newTime;
+    if (!isPlaying) {
+      audio.pause();
+    }
   };
 
   return (
@@ -125,10 +140,10 @@ export default function AudioPlayer() {
           </button>
           <div>
             <p className="font-bold text-lg font-mono uppercase tracking-widest">
-              dead sakura
+              {title || "Simon Said"}
             </p>
             <p className="text-sm text-zinc-400 font-mono uppercase tracking-widest">
-              frayz the raw
+              {artist || "Frayz The Raw"}
             </p>
           </div>
         </div>
