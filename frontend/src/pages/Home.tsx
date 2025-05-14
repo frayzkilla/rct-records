@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
+    <div className="mt-20 bg-black text-white font-sans">
       <section className="py-24 px-6 text-center bg-gradient-to-b from-black via-zinc-900 to-black">
         <h1 className="font-bangers text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 animate-pulse">
           RAW CROWNZ RECORDS
