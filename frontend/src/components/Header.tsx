@@ -17,7 +17,7 @@ const Header = () => {
           <Link to="/albums" className="hover:text-gray-400">
             Альбомы
           </Link>
-          <Link to="/artists/1" className="hover:text-gray-400">
+          <Link to="/artists" className="hover:text-gray-400">
             Артисты
           </Link>
         </nav>
