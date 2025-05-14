@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router-dom'
 import Home from '../pages/Home'
 import MainLayout from '../layouts/MainLayout'
 import Artists from '../pages/Artists'
+import BeatsPage from '../pages/Beats'
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
@@ -17,6 +18,10 @@ export const useRoutesConfig = (): RouteObject[] => {
         {
           path: 'artists',
           element: <Artists />,
+        },
+        {
+          path: 'beats',
+          element: <BeatsPage />,
         },
       ],
     },
