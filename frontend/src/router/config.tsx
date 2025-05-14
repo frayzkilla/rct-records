@@ -4,6 +4,7 @@ import Home from '../pages/Home'
 import MainLayout from '../layouts/MainLayout'
 import Artists from '../pages/Artists'
 import BeatsPage from '../pages/Beats'
+import AboutPage from '../pages/About'
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
@@ -22,6 +23,10 @@ export const useRoutesConfig = (): RouteObject[] => {
         {
           path: 'beats',
           element: <BeatsPage />,
+        },
+        {
+          path: 'about',
+          element: <AboutPage />,
         },
       ],
     },

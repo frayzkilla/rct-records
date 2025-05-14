@@ -20,6 +20,9 @@ const Header = () => {
           <Link to="/artists" className="hover:text-gray-400">
             Артисты
           </Link>
+          <Link to="/about" className="hover:text-gray-400">
+            О нас
+          </Link>
         </nav>
       </div>
     </header>
