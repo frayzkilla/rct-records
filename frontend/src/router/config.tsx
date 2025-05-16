@@ -5,6 +5,7 @@ import MainLayout from '../layouts/MainLayout'
 import Artists from '../pages/Artists'
 import BeatsPage from '../pages/Beats'
 import AboutPage from '../pages/About'
+import AlbumsPage from '../pages/Albums'
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
@@ -27,6 +28,10 @@ export const useRoutesConfig = (): RouteObject[] => {
         {
           path: 'about',
           element: <AboutPage />,
+        },
+        {
+          path: 'albums',
+          element: <AlbumsPage />,
         },
       ],
     },
