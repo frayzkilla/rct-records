@@ -12,7 +12,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use('/storage', express.static(join(__dirname, '..', 'storage')));
+  app.use('/storage', express.static(join(__dirname, '..', '..', 'storage')));
 
   await app.listen(3000);
 }
