@@ -5,9 +5,9 @@ type Album = {
   id: string;
   title: string;
   artist: string;
-  cover: string;
+  coverUrl: string;
   year: number;
-  tracks: number;
+  tracksQuantity: number;
 };
 
 // const albums = [
@@ -56,9 +56,9 @@ export default function AlbumsPage() {
             key={album.id}
             title={album.title}
             artist={album.artist}
-            cover={`http://localhost:3000/${album.cover}`}
+            cover={`http://localhost:3000/${album.coverUrl}`}
             year={album.year}
-            tracks={album.tracks}
+            tracks={album.tracksQuantity}
           />
         ))}
       </div>
