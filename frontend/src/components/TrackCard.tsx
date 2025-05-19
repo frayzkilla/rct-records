@@ -51,7 +51,6 @@ export default function TrackCard({
         </button>
       </div>
 
-      {/* Progress indicator */}
       <div className="absolute bottom-0 left-0 h-1 bg-[#D4AF37]/20 w-full">
         <div className="h-full bg-[#D4AF37] w-0 group-hover:w-full transition-all duration-500 ease-out" />
       </div>

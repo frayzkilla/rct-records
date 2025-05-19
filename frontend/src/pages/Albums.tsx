@@ -35,7 +35,6 @@ type Album = {
 // ];
 
 export default function AlbumsPage() {
-
   const [albums, setAlbums] = useState<Album[]>([]);
 
   useEffect(() => {
@@ -50,7 +49,9 @@ export default function AlbumsPage() {
       <h2 className="text-4xl sm:text-6xl text-center text-transparent font-bold font-mono uppercase tracking-widest bg-clip-text bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#E0C068] mb-16">
         АЛЬБОМЫ RAW CROWNZ
       </h2>
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-8 max-w-4xl mx-auto relative mb-8">
+        <div className="absolute left-0 top-0 h-full w-0.5 bg-[#C9A227]/20 -ml-8" />
+        <div className="absolute right-0 top-0 h-full w-0.5 bg-[#C9A227]/20 -mr-8" />
         {albums.map((album) => (
           <AlbumCard
             key={album.id}
