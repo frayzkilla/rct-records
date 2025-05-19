@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ArtistsController } from './artists/artists.controller';
 import { ArtistsModule } from './artists/artists.module';
+import { TracksModule } from './tracks/tracks.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ArtistsModule } from './artists/artists.module';
       synchronize: true,
     }),
     ArtistsModule,
+    TracksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
