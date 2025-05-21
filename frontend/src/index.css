@@ -47,3 +47,12 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #b59c30 #1c1a0e;
 }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.3); }
+}
+
+.animate-wave {
+  animation: wave 1.2s ease-in-out infinite;
+}
