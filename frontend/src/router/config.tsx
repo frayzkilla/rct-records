@@ -6,6 +6,7 @@ import Artists from '../pages/Artists'
 import BeatsPage from '../pages/Beats'
 import AboutPage from '../pages/About'
 import AlbumsPage from '../pages/Albums'
+import AdminPage from '../pages/AdminPage'
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
@@ -32,6 +33,10 @@ export const useRoutesConfig = (): RouteObject[] => {
         {
           path: 'albums',
           element: <AlbumsPage />,
+        },
+        {
+          path: 'admin',
+          element: <AdminPage />,
         },
       ],
     },
