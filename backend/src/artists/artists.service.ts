@@ -10,7 +10,7 @@ export class ArtistsService {
     private readonly artistsRepo: Repository<Artist>,
   ) {}
 
-  async findById(id: string): Promise<Artist> {
+  async findById(id: number): Promise<Artist> {
     const artist = await this.artistsRepo.findOne({ where: { id } });
 
     if (!artist) {

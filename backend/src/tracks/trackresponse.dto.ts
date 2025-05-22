@@ -1,7 +1,7 @@
 import { Track } from "./track.entity";
 
 export class TrackResponseDto {
-  id: string;
+  id: number;
   title: string;
   audioUrl: string;
   coverUrl: string;

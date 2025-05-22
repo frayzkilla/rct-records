@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Track } from './track.entity';
 import { Repository } from 'typeorm';
 import { TrackResponseDto } from './trackresponse.dto';
 import { TracksService } from './tracks.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { TrackCreateDto } from './trackcreate.dto';
@@ -16,7 +26,7 @@ export class TracksController {
     @InjectRepository(Track)
     private readonly tracksRepo: Repository<Track>,
     private readonly trackService: TracksService,
-    private readonly artistsService: ArtistsService, 
+    private readonly artistsService: ArtistsService,
   ) {}
 
   @Get()
@@ -27,37 +37,42 @@ export class TracksController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('files', 2, {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const type = file.fieldname === 'audio' ? 'tracks' : 'covers';
-          const path = `../storage/${type}`;
-
-          cb(null, path);
-        },
-        filename: (req, file, cb) => {
-          const artist = req.body.artist.replace(/\s+/g, '_');
-          const title = req.body.title.replace(/\s+/g, '_');
-          const ext = extname(file.originalname);
-          cb(null, `${artist}_${title}${ext}`);
-        },
-      }),
-    }),
+    FileFieldsInterceptor(
+      [
+        { name: 'audio', maxCount: 1 },
+        { name: 'cover', maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            const type = file.fieldname === 'audio' ? 'tracks' : 'covers';
+            cb(null, `../storage/${type}`);
+          },
+          filename: (req, file, cb) => {
+            cb(null, file.originalname);
+          },
+        }),
+      },
+    ),
   )
   async createTrack(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      audio?: Express.Multer.File[];
+      cover?: Express.Multer.File[];
+    },
     @Body() body: TrackCreateDto,
   ) {
-    const audioFile = files.find((f) => f.fieldname === 'audio');
-    const coverFile = files.find((f) => f.fieldname === 'cover');
+    const audioFile = files.audio?.[0];
+    const coverFile = files.cover?.[0];
 
     const artist = await this.artistsService.findById(body.artistId);
 
     const track = new Track();
     track.title = body.title;
     track.artist = artist;
-    track.audioUrl = `/storage/tracks/${audioFile.filename}`;
-    track.coverUrl = `/storage/covers/${coverFile.filename}`;
+    track.audioUrl = `storage/tracks/${audioFile.filename}`;
+    track.coverUrl = `storage/covers/${coverFile.filename}`;
 
     return this.tracksRepo.save(track);
   }

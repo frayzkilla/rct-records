@@ -1,7 +1,7 @@
 import { Album } from "./album.entity";
 
 export class AlbumResponseDto {
-  id: string;
+  id: number;
   title: string;
   coverUrl: string;
   year: string;
