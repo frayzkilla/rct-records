@@ -19,6 +19,7 @@ import { Repository } from 'typeorm';
 @Controller('api/albums')
 export class AlbumsController {
   constructor(
+    @InjectRepository(Album)
     private readonly albumsRepo: Repository<Album>,
     private readonly albumsService: AlbumsService,
     private readonly artistsService: ArtistsService,
