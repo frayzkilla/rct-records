@@ -23,7 +23,7 @@ const AdminPage = () => {
   const [artistBio, setArtistBio] = useState("");
   const [artistAvatar, setArtistAvatar] = useState<File | null>(null);
 
-  const ADMIN_KEY = "rawcrownz_secret_2025";
+//   const ADMIN_KEY = "rawcrownz_secret_2025";
 
   useEffect(() => {
     fetch("http://localhost:3000/api/artists")
@@ -38,9 +38,8 @@ const AdminPage = () => {
 
   const upload = async (endpoint: string, data: FormData) => {
     try {
-      await fetch(`/api/${endpoint}`, {
+      await fetch(`http://localhost:3000/api/${endpoint}`, {
         method: "POST",
-        headers: { "x-admin-key": ADMIN_KEY },
         body: data,
       });
       alert("Успешно отправлено");
@@ -57,7 +56,7 @@ const AdminPage = () => {
     if (trackAlbumId) formData.append("albumId", trackAlbumId);
     if (trackAudio) formData.append("audio", trackAudio);
     if (trackCover) formData.append("cover", trackCover);
-    await upload("tracks", formData);
+    await upload("beats", formData);
   };
 
   const handleAlbumSubmit = async () => {

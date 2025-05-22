@@ -20,7 +20,7 @@ export default function BeatsPage() {
   }, []);
 
   return (
-    <div className="bg-black text-white font-sans px-6 py-24 min-h-screen">
+    <div className="bg-black text-white font-sans px-6 py-24 min-h-screen mb-10">
       <h2 className="text-6xl md:text-7xl text-center text-transparent font-bold font-mono uppercase tracking-widest bg-clip-text bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#E0C068] mb-16">
         БИТЫ FROM THE RAW
       </h2>

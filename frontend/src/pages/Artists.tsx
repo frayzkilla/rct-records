@@ -19,7 +19,7 @@ export default function ArtistsPage() {
   }, []);
 
   return (
-    <div className="bg-black text-white font-sans px-4 sm:px-6 py-24 min-h-screen">
+    <div className="bg-black text-white font-sans px-4 sm:px-6 py-24 min-h-screen mb-10">
       <h2 className="text-4xl sm:text-6xl text-center text-transparent font-bold font-mono uppercase tracking-widest bg-clip-text bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#E0C068] mb-16">
         НАШИ АРТИСТЫ
       </h2>
