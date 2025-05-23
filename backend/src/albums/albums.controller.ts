@@ -69,4 +69,16 @@ export class AlbumsController {
     await this.albumsService.remove(id);
     return { message: 'Альбом удалён' };
   }
+
+  @Get(':id/tracks')
+  async getTracksByAlbum(@Param('id') id: number) {
+    const tracks = await this.albumsService.getTracksByAlbumId(id);
+
+    return tracks.map((track) => ({
+      title: track.title,
+      producer: track.artist.name,
+      cover: track.album.coverUrl,
+      audio: track.audioUrl,
+    }));
+  }
 }
