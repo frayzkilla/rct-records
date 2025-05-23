@@ -29,7 +29,7 @@ const EditContentPage = () => {
   const [editData, setEditData] = useState<any>({});
   const [isEditing, setIsEditing] = useState(false);
 
-  const ADMIN_KEY = "rawcrownz_secret_2025";
+  // const ADMIN_KEY = "rawcrownz_secret_2025";
 
   useEffect(() => {
     fetchData();
@@ -60,7 +60,6 @@ const EditContentPage = () => {
       try {
         await fetch(`http://localhost:3000/api/${contentType}/${id}`, {
           method: "DELETE",
-          headers: { "x-admin-key": ADMIN_KEY },
         });
         fetchData();
       } catch (error) {
@@ -81,7 +80,6 @@ const EditContentPage = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-key": ADMIN_KEY,
         },
         body: JSON.stringify(editData),
       });
@@ -186,7 +184,7 @@ const EditContentPage = () => {
     if (!isEditing) return null;
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 ">
         <div className="bg-zinc-900/80 rounded-xl p-8 max-w-md w-full border border-[#D4AF37]/30">
           <h3 className="text-xl text-[#D4AF37] mb-4">Редактирование</h3>
 
@@ -257,7 +255,7 @@ const EditContentPage = () => {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen pt-24 pb-12 px-4">
+    <div className="bg-black text-white min-h-screen pt-24 pb-12 px-4 mb-20">
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 text-center">
           <h1
@@ -269,7 +267,7 @@ const EditContentPage = () => {
         </div>
 
         <div className="flex space-x-8 mb-8 border-b border-[#C9A227]/30">
-          {(["tracks", "albums", "artists"] as ContentType[]).map((type) => (
+          {(["beats", "albums", "artists"] as ContentType[]).map((type) => (
             <button
               key={type}
               onClick={() => {
