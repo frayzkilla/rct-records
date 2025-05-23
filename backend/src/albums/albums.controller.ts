@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -60,5 +62,11 @@ export class AlbumsController {
     album.coverUrl = `storage/albums/${coverFile.filename}`;
 
     return this.albumsRepo.save(album);
+  }
+
+  @Delete(':id')
+  async deleteTrack(@Param('id') id: number) {
+    await this.albumsService.remove(id);
+    return { message: 'Альбом удалён' };
   }
 }

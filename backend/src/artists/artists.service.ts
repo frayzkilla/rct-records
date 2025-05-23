@@ -19,4 +19,8 @@ export class ArtistsService {
 
     return artist;
   }
+
+  async remove(id: number): Promise<void> {
+    await this.artistsRepo.delete(id);
+  }
 }

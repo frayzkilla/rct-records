@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -75,5 +77,11 @@ export class TracksController {
     track.coverUrl = `storage/covers/${coverFile.filename}`;
 
     return this.tracksRepo.save(track);
+  }
+
+  @Delete(':id')
+  async deleteTrack(@Param('id') id: number) {
+    await this.trackService.remove(id);
+    return { message: 'Трек удалён' };
   }
 }

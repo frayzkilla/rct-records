@@ -15,4 +15,8 @@ export class TracksService {
       relations: ['artist'],
     });
   }
+
+  async remove(id: number): Promise<void> {
+    await this.tracksRepo.delete(id);
+  }
 }

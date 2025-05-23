@@ -6,18 +6,21 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import { Param, Delete } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Artist } from './artist.entity';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { ArtistCreateDto } from './artistcreate.dto';
+import { ArtistsService } from './artists.service';
 
 @Controller('api/artists')
 export class ArtistsController {
   constructor(
     @InjectRepository(Artist)
     private readonly artistRepo: Repository<Artist>,
+    private readonly artistsService: ArtistsService, 
   ) {}
 
   @Get()
@@ -53,5 +56,11 @@ export class ArtistsController {
     artist.avatarUrl = `storage/artists_images/${coverFile.filename}`;
 
     return this.artistRepo.save(artist);
+  }
+
+  @Delete(':id')
+  async deleteTrack(@Param('id') id: number) {
+    await this.artistsService.remove(id);
+    return { message: 'Артист удалён' };
   }
 }
