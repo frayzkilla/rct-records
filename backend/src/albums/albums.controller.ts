@@ -77,8 +77,8 @@ export class AlbumsController {
     return tracks.map((track) => ({
       title: track.title,
       producer: track.artist.name,
-      cover: track.album.coverUrl,
-      audio: track.audioUrl,
+      coverUrl: track.album.coverUrl,
+      audioUrl: track.audioUrl,
     }));
   }
 }

@@ -30,10 +30,12 @@ export class AlbumsService {
       throw new NotFoundException('Альбом не найден');
     }
 
-    return this.trackRepo.find({
-      where: { album: { id: albumId } },
-      relations: ['album'],
-      order: { title: 'ASC' },
-    });
+    const tracks = await this.trackRepo.find({
+    where: { album: { id: albumId } },
+    relations: ['album', 'artist'],
+    order: { title: 'ASC' },
+  });
+
+  return tracks.filter((track) => track.album !== null);
   }
 }

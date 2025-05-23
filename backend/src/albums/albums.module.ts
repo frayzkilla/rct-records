@@ -4,9 +4,11 @@ import { AlbumsController } from './albums.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Album } from './album.entity';
 import { ArtistsModule } from 'src/artists/artists.module';
+import { TracksModule } from 'src/tracks/tracks.module';
+import { Track } from 'src/tracks/track.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Album]), ArtistsModule],
+  imports: [TypeOrmModule.forFeature([Album, Track]), ArtistsModule, TracksModule],
   providers: [AlbumsService],
   controllers: [AlbumsController],
   exports: [AlbumsService],
