@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AlbumCard from "../components/AlbumCard";
+import TrackCard from "../components/TrackCard";
 
 type Album = {
   id: string;
@@ -8,6 +9,14 @@ type Album = {
   coverUrl: string;
   year: number;
   tracksQuantity: number;
+};
+
+type Beat = {
+  id: string;
+  title: string;
+  audioUrl: string;
+  coverUrl: string;
+  producer: string;
 };
 
 // const albums = [
@@ -36,6 +45,29 @@ type Album = {
 
 export default function AlbumsPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+  const [tracks, setTracks] = useState<Beat[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openAlbumModal = async (album: Album) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/albums/${album.id}/tracks`
+      );
+      const data = await res.json();
+      setTracks(data);
+      setSelectedAlbum(album);
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error("Ошибка при загрузке треков альбома", err);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedAlbum(null);
+    setTracks([]);
+  };
 
   useEffect(() => {
     fetch("http://localhost:3000/api/albums")
@@ -53,15 +85,53 @@ export default function AlbumsPage() {
         <div className="absolute left-0 top-0 h-full w-0.5 bg-[#C9A227]/20 -ml-8" />
         <div className="absolute right-0 top-0 h-full w-0.5 bg-[#C9A227]/20 -mr-8" />
         {albums.map((album) => (
-          <AlbumCard
+          <div
             key={album.id}
-            title={album.title}
-            artist={album.artist}
-            cover={`http://localhost:3000/${album.coverUrl}`}
-            year={album.year}
-            tracks={album.tracksQuantity}
-          />
+            className="w-full cursor-pointer"
+            onClick={() => openAlbumModal(album)}
+          >
+            <AlbumCard
+              key={album.id}
+              title={album.title}
+              artist={album.artist}
+              cover={`http://localhost:3000/${album.coverUrl}`}
+              year={album.year}
+              tracks={album.tracksQuantity}
+            />
+          </div>
         ))}
+
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 text-2xl"
+              >
+                ×
+              </button>
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] text-center mb-6 uppercase tracking-widest">
+                {selectedAlbum?.title}
+              </h3>
+              <div className="flex flex-col gap-4">
+                {tracks.length > 0 ? (
+                  tracks.map((track) => (
+                    <TrackCard
+                      key={track.id}
+                      title={track.title}
+                      producer={track.producer}
+                      cover={`http://localhost:3000/${track.coverUrl}`}
+                      audio={`http://localhost:3000/${track.audioUrl}`}
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-zinc-400">Треки не найдены</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
       </div>
     </div>
   );

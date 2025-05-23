@@ -1,4 +1,4 @@
-import BitCard from "../components/TrackCard";
+import TrackCard from "../components/TrackCard";
 import { useEffect, useState } from "react";
 
 type Beat = {
@@ -26,7 +26,7 @@ export default function BeatsPage() {
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4 md:px-8">
         {beats.map((beat) => (
-          <BitCard
+          <TrackCard
             key={beat.id}
             title={beat.title}
             producer={beat.producer}
