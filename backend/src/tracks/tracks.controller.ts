@@ -21,6 +21,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { TrackCreateDto } from './trackcreate.dto';
 import { ArtistsService } from 'src/artists/artists.service';
+import { AlbumsService } from 'src/albums/albums.service';
 
 @Controller('api/beats')
 export class TracksController {
@@ -29,6 +30,7 @@ export class TracksController {
     private readonly tracksRepo: Repository<Track>,
     private readonly trackService: TracksService,
     private readonly artistsService: ArtistsService,
+    private readonly albumsService: AlbumsService,
   ) {}
 
   @Get()
@@ -73,6 +75,7 @@ export class TracksController {
     const track = new Track();
     track.title = body.title;
     track.artist = artist;
+    track.album = body.albumId ? await this.albumsService.findById(body.albumId) : null;
     track.audioUrl = `storage/tracks/${audioFile.filename}`;
     track.coverUrl = `storage/covers/${coverFile.filename}`;
 

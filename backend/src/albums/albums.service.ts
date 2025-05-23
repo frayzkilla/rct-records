@@ -38,4 +38,14 @@ export class AlbumsService {
 
   return tracks.filter((track) => track.album !== null);
   }
+
+  async findById(id: number): Promise<Album> {
+    const album = await this.albumsRepo.findOne({ where: { id } });
+
+    if (!album) {
+      throw new NotFoundException(`Album with ID ${id} not found`);
+    }
+
+    return album;
+  }
 }
