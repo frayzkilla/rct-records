@@ -100,39 +100,37 @@ export default function AlbumsPage() {
             />
           </div>
         ))}
-
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 text-2xl"
-              >
-                ×
-              </button>
-              <h3 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] text-center mb-6 uppercase tracking-widest">
-                {selectedAlbum?.title}
-              </h3>
-              <div className="flex flex-col gap-4">
-                {tracks.length > 0 ? (
-                  tracks.map((track) => (
-                    <TrackCard
-                      key={track.id}
-                      title={track.title}
-                      producer={track.producer}
-                      cover={`http://localhost:3000/${track.coverUrl}`}
-                      audio={`http://localhost:3000/${track.audioUrl}`}
-                    />
-                  ))
-                ) : (
-                  <p className="text-center text-zinc-400">Треки не найдены</p>
-                )}
-              </div>
+      </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 -mt-20">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-7 w-full max-w-3xl max-h-[70vh] overflow-y-auto relative">
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 text-2xl"
+            >
+              ×
+            </button>
+            <h3 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] text-center mb-6 uppercase tracking-widest">
+              {selectedAlbum?.title}
+            </h3>
+            <div className="flex flex-col gap-4">
+              {tracks.length > 0 ? (
+                tracks.map((track) => (
+                  <TrackCard
+                    key={track.id}
+                    title={track.title}
+                    producer={track.producer}
+                    cover={`http://localhost:3000/${track.coverUrl}`}
+                    audio={`http://localhost:3000/${track.audioUrl}`}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-zinc-400">Треки не найдены</p>
+              )}
             </div>
           </div>
-        )}
-        
-      </div>
+        </div>
+      )}
     </div>
   );
 }
