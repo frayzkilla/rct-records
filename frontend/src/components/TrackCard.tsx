@@ -18,10 +18,15 @@ export default function TrackCard({
 
   const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
 
+  const setTitle = usePlayerStore((state) => state.setTitle);
+  const setArtist = usePlayerStore((state) => state.setArtist);
+
   const playAudio = (audio: string) => {
     setIsPlaying(false);
     setTrack(audio);
     setIsPlaying(true);
+    setTitle(title);
+    setArtist(producer);
   };
 
   return (

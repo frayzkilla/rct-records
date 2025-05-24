@@ -7,13 +7,15 @@ export default function AudioPlayer() {
 
   const track = usePlayerStore((state) => state.track);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const title = usePlayerStore((state) => state.title);
+  const artist = usePlayerStore((state) => state.artist);
   const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
 
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
-  const [artist, setArtist] = useState("");
-  const [title, setTitle] = useState("");
+  // const [artist, setArtist] = useState("");
+  // const [title, setTitle] = useState("");
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -46,11 +48,11 @@ export default function AudioPlayer() {
   useEffect(() => {
     if (!track) return;
 
-    const fileName = track.split("/").pop()?.replace(".mp3", "") ?? "";
-    const [rawArtist, rawTitle] = fileName.split("_");
+    // const fileName = track.split("/").pop()?.replace(".mp3", "") ?? "";
+    // const [rawArtist, rawTitle] = fileName.split("_");
 
-    setArtist(rawArtist || "Unknown Artist");
-    setTitle(rawTitle || "Unknown Title");
+    // setArtist(rawArtist || "Unknown Artist");
+    // setTitle(rawTitle || "Unknown Title");
 
     const audio = audioRef.current;
     if (!audio || !track) return;
