@@ -26,19 +26,22 @@ const AdminPage = () => {
 //   const ADMIN_KEY = "rawcrownz_secret_2025";
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/artists")
+    // fetch("http://localhost:3000/api/artists")
+    fetch("/api/artists")
       .then((res) => res.json())
       .then(setArtists)
       .catch((err) => console.error("Ошибка при загрузке артистов", err));
 
-    fetch("http://localhost:3000/api/albums")
+    // fetch("http://localhost:3000/api/albums")
+    fetch("/api/albums")
       .then((res) => res.json())
       .then(setAlbums);
   }, []);
 
   const upload = async (endpoint: string, data: FormData) => {
     try {
-      await fetch(`http://localhost:3000/api/${endpoint}`, {
+      // await fetch(`http://localhost:3000/api/${endpoint}`, {
+      await fetch(`/api/${endpoint}`, {
         method: "POST",
         body: data,
       });

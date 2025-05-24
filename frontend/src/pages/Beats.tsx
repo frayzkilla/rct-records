@@ -13,7 +13,8 @@ export default function BeatsPage() {
   const [beats, setBeats] = useState<Beat[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/beats")
+    // fetch("http://localhost:3000/api/beats")
+    fetch("/api/beats")
       .then((res) => res.json())
       .then(setBeats)
       .catch((err) => console.error("Ошибка при загрузке битов", err));
@@ -30,8 +31,10 @@ export default function BeatsPage() {
             key={beat.id}
             title={beat.title}
             producer={beat.producer}
-            cover={`http://localhost:3000/${beat.coverUrl}`}
-            audio={`http://localhost:3000/${beat.audioUrl}`}
+            // cover={`http://localhost:3000/${beat.coverUrl}`}
+            // audio={`http://localhost:3000/${beat.audioUrl}`}
+            cover={`${beat.coverUrl}`}
+            audio={`${beat.audioUrl}`}
           />
         ))}
       </div>
