@@ -18,7 +18,7 @@ import {
   FilesInterceptor,
 } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { TrackCreateDto } from './trackcreate.dto';
 import { ArtistsService } from 'src/artists/artists.service';
 import { AlbumsService } from 'src/albums/albums.service';
@@ -50,7 +50,8 @@ export class TracksController {
         storage: diskStorage({
           destination: (req, file, cb) => {
             const type = file.fieldname === 'audio' ? 'tracks' : 'covers';
-            cb(null, `../storage/${type}`);
+            const uploadPath = join(process.cwd(), 'storage', type);
+            cb(null, uploadPath);
           },
           filename: (req, file, cb) => {
             cb(null, file.originalname);
@@ -75,7 +76,9 @@ export class TracksController {
     const track = new Track();
     track.title = body.title;
     track.artist = artist;
-    track.album = body.albumId ? await this.albumsService.findById(body.albumId) : null;
+    track.album = body.albumId
+      ? await this.albumsService.findById(body.albumId)
+      : null;
     track.audioUrl = `storage/tracks/${audioFile.filename}`;
     track.coverUrl = `storage/covers/${coverFile.filename}`;
 

@@ -17,6 +17,7 @@ import { diskStorage } from 'multer';
 import { AlbumCreateDto } from './albumcreate.dto';
 import { ArtistsService } from 'src/artists/artists.service';
 import { Repository } from 'typeorm';
+import { join } from 'path';
 
 @Controller('api/albums')
 export class AlbumsController {
@@ -38,7 +39,8 @@ export class AlbumsController {
     FileFieldsInterceptor([{ name: 'cover', maxCount: 1 }], {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          cb(null, `../storage/albums`);
+          const uploadPath = join(process.cwd(), 'storage', 'albums');
+          cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
           cb(null, file.originalname);
