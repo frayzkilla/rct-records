@@ -4,7 +4,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "80:80"
+      - "3001:80"
     volumes:
       - ./storage:/storage:ro
     depends_on:
