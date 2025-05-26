@@ -29,7 +29,7 @@ export default function AboutPage() {
           тому, что будет завтра.
         </p>
 
-        <p className="font-mono tracking-wide">
+        <p className="font-mono tracking-wide mt-2">
           Мы — те, кто делает по-своему. Мы —{" "}
           <span className="text-[#C9A227] animate-pulse font-extrabold">
             RAW

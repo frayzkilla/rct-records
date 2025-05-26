@@ -90,7 +90,7 @@ html {
 
 @media (max-width: 640px) {
   #main-title {
-    font-size: 5.625rem;
+    font-size: 5rem;
     line-height: 0.65;
   }
 }
@@ -131,23 +131,4 @@ html {
     display: none !important;
   }
 
-  .album-wrapper img {
-    width: 100px !important;
-    height: 100px !important;
-  }
-
-  .album-wrapper h3 {
-    font-size: 1.25rem !important; /* text-xl */
-  }
-
-  .album-wrapper p {
-    font-size: 0.9rem !important;
-  }
-
-  .album-wrapper button {
-    position: static !important;
-    transform: none !important;
-    opacity: 1 !important;
-    margin-top: 1rem !important;
-  }
 }
