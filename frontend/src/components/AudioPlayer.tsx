@@ -14,8 +14,13 @@ export default function AudioPlayer() {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
-  // const [artist, setArtist] = useState("");
-  // const [title, setTitle] = useState("");
+
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds)) return "0:00";
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -58,6 +63,7 @@ export default function AudioPlayer() {
     if (!audio || !track) return;
 
     audio.src = track;
+    audio.load();
     setProgress(0);
     setDuration(0);
 
@@ -129,6 +135,8 @@ export default function AudioPlayer() {
     }
   };
 
+  const currentTime = (progress / 100) * duration;
+
   return (
     <div className="w-full bg-zinc-900 text-white p-4 md:p-6 border-t border-zinc-700 flex flex-col items-center justify-center gap-3 md:gap-4">
       <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl">
@@ -138,7 +146,11 @@ export default function AudioPlayer() {
             onClick={togglePlay}
             className="p-2 md:p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg flex-shrink-0"
           >
-            {isPlaying ? <Pause size={20} className="md:size-6" /> : <Play size={20} className="md:size-6" />}
+            {isPlaying ? (
+              <Pause size={20} className="md:size-6" />
+            ) : (
+              <Play size={20} className="md:size-6" />
+            )}
           </button>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-base md:text-lg font-mono uppercase tracking-widest truncate">
@@ -151,19 +163,23 @@ export default function AudioPlayer() {
         </div>
 
         <div className="w-full md:flex-1">
-          <input
-            type="range"
-            className="w-full h-2 bg-[#C9A227] rounded-full cursor-pointer"
-            min="0"
-            max="100"
-            step="1"
-            value={progress}
-            onChange={(e) => handleSeekChange(Number(e.target.value))}
-            onMouseDown={handleSeekStart}
-            onTouchStart={handleSeekStart}
-            onMouseUp={() => handleSeekEnd(progress)}
-            onTouchEnd={() => handleSeekEnd(progress)}
-          />
+          <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">
+            <span className="w-12 text-left">{formatTime(currentTime)}</span>
+            <input
+              type="range"
+              className="w-full h-2 bg-[#C9A227] rounded-full cursor-pointer"
+              min="0"
+              max="100"
+              step="1"
+              value={progress}
+              onChange={(e) => handleSeekChange(Number(e.target.value))}
+              onMouseDown={handleSeekStart}
+              onTouchStart={handleSeekStart}
+              onMouseUp={() => handleSeekEnd(progress)}
+              onTouchEnd={() => handleSeekEnd(progress)}
+            />
+            <span className="w-12 text-right">{formatTime(duration)}</span>
+          </div>
         </div>
       </div>
     </div>
