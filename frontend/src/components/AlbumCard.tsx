@@ -19,7 +19,7 @@ export default function AlbumCard({
 
   return (
     <div
-      className={`group w-full flex ${
+      className={`album-wrapper group w-full flex ${
         isEven ? "flex-row" : "flex-row-reverse"
       } items-center gap-6 bg-zinc-900/60
   hover:bg-zinc-800/40 p-6 transition-all duration-500 ease-in-out
@@ -27,7 +27,7 @@ export default function AlbumCard({
   transform hover:scale-[1.001] origin-center  border-zinc-700 rounded-lg`}
     >
       <div
-        className={`absolute ${
+        className={`album-year absolute ${
           isEven ? "-left-28" : "-right-28"
         } top-1/2 -translate-y-1/2 
         text-6xl font-bold text-[#D4AF37]/30 z-0 pointer-events-none font-mono`}
@@ -35,7 +35,6 @@ export default function AlbumCard({
         {String(year).slice(2)}
       </div>
 
-      {/* Обложка с эффектом металлической пластины */}
       <div
         className={`relative z-10 w-48 flex-shrink-0 
         border-2 border-[#C9A227]/30 rounded-xl`}
@@ -48,7 +47,6 @@ export default function AlbumCard({
         <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-black/40 to-transparent" />
       </div>
 
-      {/* Информация */}
       <div className={`flex-1 ${isEven ? "text-left" : "text-right"}`}>
         <h3 className="text-2xl font-bold font-mono uppercase tracking-widest text-[#FFD700] mb-2">
           {title}
@@ -68,7 +66,6 @@ export default function AlbumCard({
         </div>
       </div>
 
-      {/* Кнопка Play */}
       <button
         className={`p-4 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition-colors hover:shadow-xl
         absolute ${isEven ? "-right-6" : "-left-6"} top-1/2 -translate-y-1/2 

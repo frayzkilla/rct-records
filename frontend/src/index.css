@@ -40,8 +40,13 @@ html {
 }
 
 @keyframes wave {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.3); }
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.3);
+  }
 }
 
 .animate-wave {
@@ -59,6 +64,7 @@ html {
     line-height: 0.75 !important;
     word-spacing: -0.3em;
     letter-spacing: -0.05em;
+    text-size: 1.5rem !important;
   }
 }
 
@@ -71,7 +77,8 @@ html {
 }
 
 @keyframes ping {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -79,4 +86,68 @@ html {
 
 .animate-ping {
   animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (max-width: 640px) {
+  #main-title {
+    font-size: 5.625rem;
+    line-height: 0.65;
+  }
+}
+
+@media (max-width: 640px) {
+  #beats-button {
+    background: #c9a227;
+    color: black;
+    font-size: 1.125rem;
+    padding: 1rem 2.5rem;
+    
+  }
+
+  #about-button {
+    background: transparent;
+    font-size: 1.125rem;
+    padding: 1rem 2.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    font-size: 1.75rem !important; /* примерно 28px */
+    margin-bottom: 3rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .album-wrapper {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 1.25rem !important; /* примерно gap-5 */
+    padding: 1.5rem 1rem !important;
+  }
+
+  .album-wrapper .album-year {
+    display: none !important;
+  }
+
+  .album-wrapper img {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .album-wrapper h3 {
+    font-size: 1.25rem !important; /* text-xl */
+  }
+
+  .album-wrapper p {
+    font-size: 0.9rem !important;
+  }
+
+  .album-wrapper button {
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    margin-top: 1rem !important;
+  }
 }
