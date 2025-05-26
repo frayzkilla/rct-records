@@ -8,7 +8,7 @@ const MainLayout: FC = () => {
       <div className="fixed top-0 left-0 w-full z-50">
         <Header />
       </div>
-      <main className="flex-grow">
+      <main className="flex-grow pt-10"> 
         <Outlet />
       </main>
     </div>

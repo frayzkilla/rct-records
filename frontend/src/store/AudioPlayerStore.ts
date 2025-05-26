@@ -12,9 +12,9 @@ interface PlayerState {
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
-  track: "/hamdi_skanka.mp3",
+  track: "/storage/tracks/leftover_woah.mp3",
   isPlaying: false,
-  title: "Skanka",
+  title: "Woah",
   artist: "Leftover",
   setTitle: (title) => set({ title }),
   setArtist: (artist) => set({ artist }),

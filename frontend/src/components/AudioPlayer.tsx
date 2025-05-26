@@ -130,27 +130,27 @@ export default function AudioPlayer() {
   };
 
   return (
-    <div className="w-full bg-zinc-900 text-white p-6 border-t border-zinc-700 flex flex-col items-center justify-center gap-4">
-      <div className="flex items-center gap-4 w-full max-w-4xl">
-        <div className="flex items-center gap-4 flex-1">
+    <div className="w-full bg-zinc-900 text-white p-4 md:p-6 border-t border-zinc-700 flex flex-col items-center justify-center gap-3 md:gap-4">
+      <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl">
+        <div className="flex items-center gap-4 w-full md:flex-1">
           <audio ref={audioRef} className="hidden" />
           <button
             onClick={togglePlay}
-            className="p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg"
+            className="p-2 md:p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg flex-shrink-0"
           >
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            {isPlaying ? <Pause size={20} className="md:size-6" /> : <Play size={20} className="md:size-6" />}
           </button>
-          <div>
-            <p className="font-bold text-lg font-mono uppercase tracking-widest">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-base md:text-lg font-mono uppercase tracking-widest truncate">
               {title || "Simon Said"}
             </p>
-            <p className="text-sm text-zinc-400 font-mono uppercase tracking-widest">
+            <p className="text-xs md:text-sm text-zinc-400 font-mono uppercase tracking-widest truncate">
               {artist || "Frayz The Raw"}
             </p>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="w-full md:flex-1">
           <input
             type="range"
             className="w-full h-2 bg-[#C9A227] rounded-full cursor-pointer"
