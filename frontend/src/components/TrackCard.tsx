@@ -36,7 +36,7 @@ export default function TrackCard({
           src={cover}
           className="w-full h-52 object-cover rounded-lg border-2 border-[#c9a3273f] group-hover:border-[#D4AF37]/40 transition-colors"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0  transition-opacity" />
       </div>
 
       <div className="flex items-center justify-between mt-4">
