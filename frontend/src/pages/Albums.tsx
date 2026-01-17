@@ -52,8 +52,8 @@ export default function AlbumsPage() {
   const openAlbumModal = async (album: Album) => {
     try {
       const res = await fetch(
-        // `http://localhost:3000/api/albums/${album.id}/tracks`
-        `/api/albums/${album.id}/tracks`
+        `http://localhost:3000/api/albums/${album.id}/tracks`
+        // `/api/albums/${album.id}/tracks`
       );
       const data = await res.json();
       setTracks(data);
@@ -71,8 +71,8 @@ export default function AlbumsPage() {
   };
 
   useEffect(() => {
-    // fetch("http://localhost:3000/api/albums")
-    fetch("/api/albums")
+    fetch("http://localhost:3000/api/albums")
+      //fetch("/api/albums")
       .then((res) => res.json())
       .then(setAlbums)
       .catch((err) => console.error("Ошибка при загрузке альбомов", err));
@@ -96,8 +96,8 @@ export default function AlbumsPage() {
               key={album.id}
               title={album.title}
               artist={album.artist}
-              // cover={`http://localhost:3000/${album.coverUrl}`}
-              cover={`${album.coverUrl}`}
+              cover={`http://localhost:3000/${album.coverUrl}`}
+              // cover={`${album.coverUrl}`}
               year={album.year}
               tracks={album.tracksQuantity}
             />
@@ -123,10 +123,10 @@ export default function AlbumsPage() {
                     key={track.id}
                     title={track.title}
                     producer={track.producer}
-                    // cover={`http://localhost:3000/${track.coverUrl}`}
-                    // audio={`http://localhost:3000/${track.audioUrl}`}
-                    cover={`${track.coverUrl}`}
-                    audio={`${track.audioUrl}`}
+                    cover={`http://localhost:3000/${track.coverUrl}`}
+                    audio={`http://localhost:3000/${track.audioUrl}`}
+                    // cover={`${track.coverUrl}`}
+                    // audio={`${track.audioUrl}`}
                   />
                 ))
               ) : (

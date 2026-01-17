@@ -37,8 +37,8 @@ const EditContentPage = () => {
 
   const fetchData = async () => {
     try {
-      // const response = await fetch(`http://localhost:3000/api/${contentType}`);
-      const response = await fetch(`/api/${contentType}`);
+      const response = await fetch(`http://localhost:3000/api/${contentType}`);
+      // const response = await fetch(`/api/${contentType}`);
       const data = await response.json();
       switch (contentType) {
         case "beats":
@@ -59,8 +59,8 @@ const EditContentPage = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Вы уверены что хотите удалить?")) {
       try {
-        // await fetch(`http://localhost:3000/api/${contentType}/${id}`, {
-        await fetch(`/api/${contentType}/${id}`, {
+        await fetch(`http://localhost:3000/api/${contentType}/${id}`, {
+          // await fetch(`/api/${contentType}/${id}`, {
           method: "DELETE",
         });
         fetchData();
@@ -78,8 +78,8 @@ const EditContentPage = () => {
 
   const handleUpdate = async () => {
     try {
-      // await fetch(`http://localhost:3000/api/${contentType}/${selectedItem}`, {
-      await fetch(`/api/${contentType}/${selectedItem}`, {
+      await fetch(`http://localhost:3000/api/${contentType}/${selectedItem}`, {
+        // await fetch(`/api/${contentType}/${selectedItem}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

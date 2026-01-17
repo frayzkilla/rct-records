@@ -23,25 +23,25 @@ const AdminPage = () => {
   const [artistBio, setArtistBio] = useState("");
   const [artistAvatar, setArtistAvatar] = useState<File | null>(null);
 
-//   const ADMIN_KEY = "rawcrownz_secret_2025";
+  //   const ADMIN_KEY = "rawcrownz_secret_2025";
 
   useEffect(() => {
-    // fetch("http://localhost:3000/api/artists")
-    fetch("/api/artists")
+    fetch("http://localhost:3000/api/artists")
+      // fetch("/api/artists")
       .then((res) => res.json())
       .then(setArtists)
       .catch((err) => console.error("Ошибка при загрузке артистов", err));
 
-    // fetch("http://localhost:3000/api/albums")
-    fetch("/api/albums")
+    fetch("http://localhost:3000/api/albums")
+      // fetch("/api/albums")
       .then((res) => res.json())
       .then(setAlbums);
   }, []);
 
   const upload = async (endpoint: string, data: FormData) => {
     try {
-      // await fetch(`http://localhost:3000/api/${endpoint}`, {
-      await fetch(`/api/${endpoint}`, {
+      await fetch(`http://localhost:3000/api/${endpoint}`, {
+        // await fetch(`/api/${endpoint}`, {
         method: "POST",
         body: data,
       });
@@ -96,11 +96,11 @@ const AdminPage = () => {
         onChange={(e) => onChange(e.target.files?.[0] || null)}
         className="opacity-0 absolute w-full h-full cursor-pointer"
       />
-      <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                    flex items-center justify-between hover:bg-zinc-800 transition-colors">
-        <span className="text-zinc-400 truncate">
-          {file?.name || label}
-        </span>
+      <div
+        className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
+                    flex items-center justify-between hover:bg-zinc-800 transition-colors"
+      >
+        <span className="text-zinc-400 truncate">{file?.name || label}</span>
         <Icon className="text-[#D4AF37] flex-shrink-0" size={20} />
       </div>
     </div>
@@ -110,8 +110,10 @@ const AdminPage = () => {
     <div className="bg-black text-white min-h-screen pt-24 pb-12 px-4 mb-24">
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold font-mono uppercase tracking-wider 
-                        text-transparent bg-clip-text bg-gradient-to-r from-[#C9A227] to-[#D4AF37]">
+          <h1
+            className="text-4xl md:text-5xl font-bold font-mono uppercase tracking-wider 
+                        text-transparent bg-clip-text bg-gradient-to-r from-[#C9A227] to-[#D4AF37]"
+          >
             🎚️ RAW ADMIN
           </h1>
           <p className="text-zinc-400 mt-2">Управление контентом лейбла</p>
@@ -124,12 +126,16 @@ const AdminPage = () => {
               onClick={() => setTab(t)}
               className={`pb-4 px-2 text-lg font-mono uppercase tracking-wider transition-all
                 ${
-                  tab === t 
+                  tab === t
                     ? "text-[#D4AF37] border-b-2 border-[#D4AF37]"
                     : "text-zinc-400 hover:text-zinc-200"
                 }`}
             >
-              {t === "tracks" ? "Треки" : t === "albums" ? "Альбомы" : "Артисты"}
+              {t === "tracks"
+                ? "Треки"
+                : t === "albums"
+                ? "Альбомы"
+                : "Артисты"}
             </button>
           ))}
         </div>
