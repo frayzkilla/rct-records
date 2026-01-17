@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Edit, Trash } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type ContentType = "beats" | "albums" | "artists";
 
@@ -21,6 +22,8 @@ interface Artist {
 }
 
 const EditContentPage = () => {
+  const navigate = useNavigate();
+
   const [contentType, setContentType] = useState<ContentType>("beats");
   const [tracks, setTracks] = useState<Track[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -291,6 +294,12 @@ const EditContentPage = () => {
                 : "Артисты"}
             </button>
           ))}
+          <button
+            onClick={() => navigate("/admin")}
+            className={`pb-4 px-2 text-lg font-mono uppercase tracking-wider transition-all text-zinc-400 hover:text-zinc-200`}
+          >
+            Добавить
+          </button>
         </div>
 
         <div className="space-y-4">

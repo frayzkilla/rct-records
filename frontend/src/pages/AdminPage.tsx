@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Plus, Upload, ImagePlus, UserPlus, Disc } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type Tab = "tracks" | "albums" | "artists";
 
 const AdminPage = () => {
+  const navigate = useNavigate();
+
   const [tab, setTab] = useState<Tab>("tracks");
   const [artists, setArtists] = useState<{ id: string; name: string }[]>([]);
   const [albums, setAlbums] = useState<{ id: string; title: string }[]>([]);
@@ -116,7 +119,7 @@ const AdminPage = () => {
           >
             🎚️ RAW ADMIN
           </h1>
-          <p className="text-zinc-400 mt-2">Управление контентом лейбла</p>
+          <p className="text-zinc-400 mt-2">Управление контентом</p>
         </div>
 
         <div className="flex space-x-8 mb-12 border-b border-[#C9A227]/30">
@@ -138,6 +141,12 @@ const AdminPage = () => {
                 : "Артисты"}
             </button>
           ))}
+          <button
+            onClick={() => navigate("/adminEdit")}
+            className={`pb-4 px-2 text-lg font-mono uppercase tracking-wider transition-all text-zinc-400 hover:text-zinc-200`}
+          >
+            Удалить/редактировать
+          </button>
         </div>
 
         <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl p-8 shadow-2xl border border-[#C9A227]/20">
