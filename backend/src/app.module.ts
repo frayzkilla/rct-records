@@ -17,10 +17,10 @@ import { AlbumsModule } from './albums/albums.module';
 
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'db',
+      host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT, 10) || 5432,
       username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'yarik',
+      password: process.env.DB_PASSWORD || '2002113',
       database: process.env.DB_DATABASE || 'rawcrownz',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
