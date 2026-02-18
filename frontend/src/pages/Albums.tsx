@@ -52,8 +52,8 @@ export default function AlbumsPage() {
   const openAlbumModal = async (album: Album) => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/albums/${album.id}/tracks`
-        // `/api/albums/${album.id}/tracks`
+        // `http://localhost:3000/api/albums/${album.id}/tracks`
+        `/api/albums/${album.id}/tracks`,
       );
       const data = await res.json();
       setTracks(data);
@@ -71,8 +71,8 @@ export default function AlbumsPage() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/albums")
-      //fetch("/api/albums")
+    // fetch("http://localhost:3000/api/albums")
+    fetch("/api/albums")
       .then((res) => res.json())
       .then(setAlbums)
       .catch((err) => console.error("Ошибка при загрузке альбомов", err));

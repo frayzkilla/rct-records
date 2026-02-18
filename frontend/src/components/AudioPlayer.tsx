@@ -161,7 +161,6 @@ export default function AudioPlayer() {
             </p>
           </div>
         </div>
-
         <div className="w-full md:flex-1">
           <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">
             <span className="w-12 text-left">{formatTime(currentTime)}</span>

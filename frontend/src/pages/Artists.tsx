@@ -12,8 +12,8 @@ export default function ArtistsPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/artists")
-      // fetch("/api/artists")
+    // fetch("http://localhost:3000/api/artists")
+    fetch("/api/artists")
       .then((res) => res.json())
       .then(setArtists)
       .catch((err) => console.error("Ошибка при загрузке артистов", err));
