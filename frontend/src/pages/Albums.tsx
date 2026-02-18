@@ -96,8 +96,8 @@ export default function AlbumsPage() {
               key={album.id}
               title={album.title}
               artist={album.artist}
-              cover={`http://localhost:3000/${album.coverUrl}`}
-              // cover={`${album.coverUrl}`}
+              // cover={`http://localhost:3000/${album.coverUrl}`}
+              cover={`${album.coverUrl}`}
               year={album.year}
               tracks={album.tracksQuantity}
             />
@@ -123,10 +123,10 @@ export default function AlbumsPage() {
                     key={track.id}
                     title={track.title}
                     producer={track.producer}
-                    cover={`http://localhost:3000/${track.coverUrl}`}
-                    audio={`http://localhost:3000/${track.audioUrl}`}
-                    // cover={`${track.coverUrl}`}
-                    // audio={`${track.audioUrl}`}
+                    // cover={`http://localhost:3000/${track.coverUrl}`}
+                    // audio={`http://localhost:3000/${track.audioUrl}`}
+                    cover={`${track.coverUrl}`}
+                    audio={`${track.audioUrl}`}
                   />
                 ))
               ) : (

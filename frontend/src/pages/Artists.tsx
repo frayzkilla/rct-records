@@ -30,8 +30,8 @@ export default function ArtistsPage() {
             key={artist.id}
             name={artist.name}
             description={artist.bio}
-            image={`http://localhost:3000/${artist.avatarUrl}`}
-            // image={`${artist.avatarUrl}`}
+            // image={`http://localhost:3000/${artist.avatarUrl}`}
+            image={`${artist.avatarUrl}`}
           />
         ))}
       </div>

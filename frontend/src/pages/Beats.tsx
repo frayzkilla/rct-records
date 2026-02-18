@@ -31,10 +31,10 @@ export default function BeatsPage() {
             key={beat.id}
             title={beat.title}
             producer={beat.producer}
-            cover={`http://localhost:3000/${beat.coverUrl}`}
-            audio={`http://localhost:3000/${beat.audioUrl}`}
-            // cover={`${beat.coverUrl}`}
-            // audio={`${beat.audioUrl}`}
+            // cover={`http://localhost:3000/${beat.coverUrl}`}
+            // audio={`http://localhost:3000/${beat.audioUrl}`}
+            cover={`${beat.coverUrl}`}
+            audio={`${beat.audioUrl}`}
           />
         ))}
       </div>
