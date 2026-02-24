@@ -1,51 +1,60 @@
-import type { RouteObject } from 'react-router-dom'
+import type { RouteObject } from "react-router-dom";
 
-import Home from '../pages/Home'
-import MainLayout from '../layouts/MainLayout'
-import Artists from '../pages/Artists'
-import BeatsPage from '../pages/Beats'
-import AboutPage from '../pages/About'
-import AlbumsPage from '../pages/Albums'
-import AdminPage from '../pages/AdminPage'
-import EditContentPage from '../pages/AdminEditPage'
+import Home from "../pages/Home";
+import MainLayout from "../layouts/MainLayout";
+import Artists from "../pages/Artists";
+import BeatsPage from "../pages/Beats";
+import AboutPage from "../pages/About";
+import AlbumsPage from "../pages/Albums";
+import AdminPage from "../pages/AdminPage";
+import EditContentPage from "../pages/AdminEditPage";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
     {
-      path: '/',
-      element: <MainLayout />, 
+      path: "/",
+      element: <MainLayout />,
       children: [
         {
-          index: true, 
+          index: true,
           element: <Home />,
         },
         {
-          path: 'artists',
+          path: "artists",
           element: <Artists />,
         },
         {
-          path: 'beats',
+          path: "beats",
           element: <BeatsPage />,
         },
         {
-          path: 'about',
+          path: "about",
           element: <AboutPage />,
         },
         {
-          path: 'albums',
+          path: "albums",
           element: <AlbumsPage />,
         },
         {
-          path: 'admin',
-          element: <AdminPage />,
+          path: "admin",
+          element: (
+            <ProtectedRoute>
+              <AdminPage />
+            </ProtectedRoute>
+          ),
         },
         {
-          path: 'adminEdit',
-          element: <EditContentPage />,
-        }
+          path: "adminEdit",
+          element: (
+            <ProtectedRoute>
+              <EditContentPage />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
-  ]
+  ];
 
-  return routes
-}
+  return routes;
+};
