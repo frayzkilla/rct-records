@@ -1,10 +1,10 @@
-# 🎧 Raw Crownz Records - visit rawcrownz.ru
+# Raw Crownz Records - visit rawcrownz.ru
 
-This project is a full-stack web application built with **React**, **Vite**, **TypeScript**, **NestJS**, and **PostgreSQL**.
+This project is a full-stack web application built with **React**, **NestJS**, and **PostgreSQL**.
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 **Frontend**  
 - React + Vite  
