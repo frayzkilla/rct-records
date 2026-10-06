@@ -66,11 +66,7 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-bottom">
-          <p>
-            Здесь музыка от наших парней.
-            <br />
-            Звук из Сибири в разных жанрах.
-          </p>
+          <p>Звук из Сибири в разных жанрах.</p>
           <div className="hero-actions">
             <Link className="button" to="/beats">
               <Play size={18} fill="currentColor" /> Press play

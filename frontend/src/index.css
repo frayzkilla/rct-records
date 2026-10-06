@@ -283,9 +283,12 @@ p {
 }
 .hero-composition {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.35fr 1fr;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 24px 0 20px;
-  gap: 36px;
+  gap: 24px;
   align-items: center;
 }
 .hero-type {
@@ -358,16 +361,19 @@ p {
 }
 .hero-crown {
   position: absolute;
-  width: 72%;
-  height: 76%;
-  top: 2%;
-  left: 12%;
+  width: 52%;
+  height: 68%;
+  top: 1%;
+  left: 27%;
   transform: rotate(-9deg);
+  filter: drop-shadow(8px 8px 0 #101010);
+  z-index: 1;
 }
 .hero-sticker {
   position: absolute;
   top: -15px;
   right: 16px;
+  z-index: 2;
   background: var(--accent);
   color: #101010;
   padding: 15px 17px;
@@ -386,7 +392,7 @@ p {
   line-height: 1.5;
   letter-spacing: 0.06em;
   font-weight: 700;
-  z-index: 1;
+  z-index: 2;
 }
 .graphic-bars {
   display: flex;
@@ -1301,10 +1307,11 @@ sup {
     box-shadow: 4px 4px 0 #545454;
   }
   .hero-crown {
-    width: 60%;
-    height: 92%;
-    left: 10%;
+    width: 40%;
+    height: 72%;
+    left: 31%;
     top: 0;
+    filter: drop-shadow(5px 5px 0 #101010);
   }
   .hero-art-label {
     bottom: 10px;
@@ -1686,4 +1693,22 @@ sup {
   :root {
     --header-height: 77px;
   }
+}
+
+.desktop-nav .nav-tab[href="/admin"] {
+  position: relative;
+  margin-left: 16px;
+}
+.desktop-nav .nav-tab[href="/admin"]::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--border);
+}
+.mobile-nav a[href="/admin"] {
+  margin-top: 12px;
+  border-left: 1px solid var(--border);
 }
