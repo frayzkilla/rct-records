@@ -11,8 +11,8 @@ type Catalog = { artists: Artist[]; albums: Album[]; beats: Track[] };
 type Tab = "beats" | "albums" | "artists" | "admins";
 type Item = Artist | Album | Track | Account;
 const labels: Record<Tab, string> = { beats: "Треки", albums: "Альбомы", artists: "Артисты", admins: "Администраторы" };
-const inputClass = "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:outline-none focus:border-[var(--orange)]";
-const buttonClass = "rounded-lg bg-[var(--orange)] px-5 py-3 font-semibold text-black disabled:opacity-50";
+const inputClass = "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:outline-none focus:border-[var(--accent)]";
+const buttonClass = "rounded-lg bg-[var(--accent)] px-5 py-3 font-semibold text-black disabled:opacity-50";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-2"><span className="text-sm text-zinc-300">{label}</span>{children}</label>;
@@ -29,8 +29,8 @@ function Editor({ tab, item, catalog, account, busy, onSave, onCancel }: {
   const [artistId, setArtistId] = useState(String(track?.artistId ?? album?.artistId ?? admin?.artistId ?? account.artistId ?? catalog.artists[0]?.id ?? ""));
   const isGodAccount = admin?.role === "god";
   return (
-    <form onSubmit={onSave} className="space-y-5 rounded-xl border border-[var(--orange)]/30 bg-zinc-900 p-6">
-      <h2 className="text-xl text-[var(--orange)]">{item ? "Редактирование" : "Добавление"}: {labels[tab].toLowerCase()}</h2>
+    <form onSubmit={onSave} className="space-y-5 rounded-xl border border-[var(--accent)]/30 bg-zinc-900 p-6">
+      <h2 className="text-xl text-[var(--accent)]">{item ? "Редактирование" : "Добавление"}: {labels[tab].toLowerCase()}</h2>
       <fieldset disabled={busy} className="space-y-5">
         {tab === "admins" ? <>
           <Field label="Логин"><input className={inputClass} name="username" defaultValue={admin?.username ?? ""} required maxLength={100} disabled={isGodAccount} autoComplete="off" /></Field>
@@ -174,9 +174,9 @@ export default function AdminPage() {
 
   return <div className="min-h-screen bg-black px-4 pb-40 pt-28 text-white">
     <div className="mx-auto max-w-4xl space-y-6">
-      <h1 className="text-3xl font-bold text-[var(--orange)]">{account?.role === "god" ? "GOD MODE" : account ? "Кабинет артиста" : "Вход в админку"}</h1>
+      <h1 className="text-3xl font-bold text-[var(--accent)]">{account?.role === "god" ? "GOD MODE" : account ? "Кабинет артиста" : "Вход в админку"}</h1>
       {error && <p role="alert" className="rounded-lg border border-red-700 bg-red-950 p-4">{error}</p>}
-      {notice && <p role="status" className="rounded-lg bg-zinc-900 p-4 text-[var(--orange)]">{notice}</p>}
+      {notice && <p role="status" className="rounded-lg bg-zinc-900 p-4 text-[var(--accent)]">{notice}</p>}
       {checking ? <p>Проверка сессии…</p> : !account ?
         <form onSubmit={login} className="max-w-md space-y-5 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <Field label="Логин"><input className={inputClass} name="username" autoComplete="username" required maxLength={100} /></Field>
@@ -185,7 +185,7 @@ export default function AdminPage() {
         </form> : <>
           <div className="flex items-center justify-between gap-4"><p className="text-zinc-400">{account.username}{account.role === "artist" && " · Только ваши треки и альбомы"}</p><button onClick={logout} disabled={busy} className="rounded-lg border border-zinc-700 px-4 py-2">Выйти</button></div>
           <nav aria-label="Разделы админки" className="flex flex-wrap gap-3 border-b border-zinc-800 pb-4">
-            {tabs.map(value => <button key={value} disabled={busy} onClick={() => { setTab(value); setEditor(null); setError(""); setNotice(""); }} className={`rounded-lg px-4 py-2 ${tab === value ? "bg-[var(--orange)] text-black" : "bg-zinc-900"}`}>{labels[value]}</button>)}
+            {tabs.map(value => <button key={value} disabled={busy} onClick={() => { setTab(value); setEditor(null); setError(""); setNotice(""); }} className={`rounded-lg px-4 py-2 ${tab === value ? "bg-[var(--accent)] text-black" : "bg-zinc-900"}`}>{labels[value]}</button>)}
           </nav>
           {loading ? <p>Загрузка каталога…</p> : <>
             {!editor && <button className={buttonClass} disabled={busy} onClick={() => openEditor(null)}>Добавить</button>}
@@ -196,7 +196,7 @@ export default function AdminPage() {
                 <div><h2 className="font-semibold">{"username" in item ? item.username : "name" in item ? item.name : item.title}</h2>
                   <p className="text-sm text-zinc-400">{"username" in item ? item.role === "god" ? "Суперадмин" : catalog.artists.find(row => row.id === item.artistId)?.name : "producer" in item ? item.producer : "artist" in item ? item.artist : ""}</p>
                 </div>
-                <div className="flex gap-3"><button disabled={busy} className="text-[var(--orange)]" onClick={() => openEditor(item)}>Редактировать</button>
+                <div className="flex gap-3"><button disabled={busy} className="text-[var(--accent)]" onClick={() => openEditor(item)}>Редактировать</button>
                   {!("role" in item && item.role === "god") && <button disabled={busy} className="text-red-400" onClick={() => remove(item)}>Удалить</button>}
                 </div>
               </div>)}

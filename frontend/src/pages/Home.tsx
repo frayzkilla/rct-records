@@ -14,61 +14,66 @@ export default function Home() {
   return (
     <>
       <section className="hero">
-        <div className="hero-top">
-          <span className="eyebrow">
-            <span className="status-dot" />
-            НЕЗАВИСИМЫЙ ЛЕЙБЛ / RAW CROWNZ
-          </span>
-          <span className="meta">TURN IT UP. FEEL IT RAW. ↗</span>
-        </div>
-        <div className="hero-composition">
-          <div className="hero-type">
-            <span className="hero-echo display" aria-hidden="true">
-              RAW
-            </span>
-            <h1 className="display">
-              RAW
-              <br />
-              <span>CROWNZ</span>
-            </h1>
-            <div className="records-line">
-              <span>RECORDS</span>
-              <span className="hero-rule" />
+        <div className="hero-stage">
+          <div className="hero-composition">
+            <div className="hero-type">
+              <span className="hero-echo display" aria-hidden="true">
+                RAW
+              </span>
+              <h1 className="display">
+                RAW
+                <br />
+                <span>CROWNZ</span>
+              </h1>
+              <div className="records-line">
+                <span className="records-word">RECORDS</span>
+                <span className="hero-rule" />
+              </div>
+            </div>
+            <div className="hero-art">
+              <Crown className="hero-crown" variant={2} />
+              <span className="hero-sticker">
+                100% RAW
+                <br />
+                0% FILTER
+              </span>
+              <span className="hero-art-label">
+                ALL GAS.
+                <br />
+                NO BRAKES.
+              </span>
+              <div className="graphic-bars" aria-hidden="true">
+                {Array.from({ length: 40 }, (_, index) => (
+                  <i
+                    key={index}
+                    style={{
+                      height: `${12 + Math.abs(Math.sin(index * 2.4)) * 70}%`,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-          <div className="hero-art">
-            <Crown className="hero-crown" variant={1} />
-            <span className="hero-sticker">
-              100% RAW
-              <br />
-              0% FILTER
-            </span>
-            <span className="hero-art-label">
-              ЗВУК, КОТОРЫЙ
-              <br />
-              НЕ ПРОСИТ РАЗРЕШЕНИЯ.
-            </span>
-            <div className="graphic-bars" aria-hidden="true">
-              {Array.from({ length: 40 }, (_, index) => (
-                <i
-                  key={index}
-                  style={{
-                    height: `${12 + Math.abs(Math.sin(index * 2.4)) * 70}%`,
-                  }}
-                />
+          <div className="ticker" aria-hidden="true">
+            <div>
+              {Array.from({ length: 6 }, (_, index) => (
+                <span key={index}>
+                  STRAIGHT OUTTA SIBERIA <b>✳</b> RAW CROWNZ RECORDS <b>✳</b>{" "}
+                  BEATS / BARS / MIXES <b>✳</b> LOWKEY LOUD <b>✳</b>
+                </span>
               ))}
             </div>
           </div>
         </div>
         <div className="hero-bottom">
           <p>
-            Сырой звук. Настоящие люди.
+            Биты, рэп и миксы от нашей команды из Сибири.
             <br />
-            Музыка вне правил — прямо в твои уши.
+            Сделали — выложили. Теперь можно послушать.
           </p>
           <div className="hero-actions">
             <Link className="button" to="/beats">
-              <Play size={18} fill="currentColor" /> Слушать треки
+              <Play size={18} fill="currentColor" /> Press play
             </Link>
             <button
               className="button button-outline"
@@ -80,7 +85,7 @@ export default function Home() {
                 )
               }
             >
-              <Shuffle size={18} /> Случайный звук
+              <Shuffle size={18} /> Surprise me
             </button>
           </div>
           <a className="hero-down" href="#latest" aria-label="Перейти к трекам">
@@ -88,16 +93,6 @@ export default function Home() {
           </a>
         </div>
       </section>
-      <div className="ticker" aria-hidden="true">
-        <div>
-          {Array.from({ length: 6 }, (_, index) => (
-            <span key={index}>
-              INDEPENDENT SOUND <b>✳</b> RAW CROWNZ RECORDS <b>✳</b> NO FILTER{" "}
-              <b>✳</b>
-            </span>
-          ))}
-        </div>
-      </div>
       <div className="page-container home-content" id="latest">
         <CatalogFeedback
           loading={catalog.isPending}
@@ -108,10 +103,10 @@ export default function Home() {
             <div className="section-heading">
               <div>
                 <span className="meta accent">01 / PRESS PLAY</span>
-                <h2>На волне</h2>
+                <h2>Fresh uploads</h2>
               </div>
               <Link to="/beats">
-                Все треки <ArrowUpRight size={18} />
+                All tracks <ArrowUpRight size={18} />
               </Link>
             </div>
             <div className="track-list">
@@ -132,18 +127,18 @@ export default function Home() {
             </div>
             {!tracks.length && (
               <div className="empty-state">
-                Каталог готов к первому релизу. Скоро здесь будет громко.
+                Пока нет треков. Добавим их сюда после загрузки.
               </div>
             )}
           </section>
           <section className="home-releases">
             <div className="section-heading">
               <div>
-                <span className="meta accent">02 / FULL STORIES</span>
-                <h2>Релизы</h2>
+                <span className="meta accent">02 / RELEASES</span>
+                <h2>Releases</h2>
               </div>
               <Link to="/albums">
-                Все альбомы <ArrowUpRight size={18} />
+                All albums <ArrowUpRight size={18} />
               </Link>
             </div>
             <div className="card-grid">
@@ -163,8 +158,8 @@ export default function Home() {
         </CatalogFeedback>
         <Link className="collective-banner" to="/artists">
           <div>
-            <span className="meta">THE PEOPLE BEHIND THE SOUND</span>
-            <h2>Лица нашего звука.</h2>
+            <span className="meta">RAW CROWNZ / THE CREW</span>
+            <h2>Meet the homies</h2>
           </div>
           <Crown />
           <ArrowUpRight size={40} />

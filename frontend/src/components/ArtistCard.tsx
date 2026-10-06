@@ -21,7 +21,7 @@ export default function ArtistCard({
           {artist.name}
           <span aria-hidden="true">↗</span>
         </Link>
-        <p>{artist.bio || "Звук с характером. Raw Crownz Records."}</p>
+        <p>{artist.bio || "Участник Raw Crownz. Треки и релизы — в профиле."}</p>
       </div>
     </article>
   );

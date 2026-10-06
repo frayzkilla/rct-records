@@ -18,8 +18,8 @@ export default function AlbumsPage() {
     <div className="page-container">
       <PageHeading
         kicker="02 / THE RELEASES"
-        title="Альбомы"
-        description="Истории, собранные в звук. От первого трека до последней волны."
+        title="Albums"
+        description="Альбомы и сборники нашей команды. Всё в одном месте."
         count={catalog.data?.albums.length}
       />
       <div className="catalog-toolbar">

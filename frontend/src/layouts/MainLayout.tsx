@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import { useCatalog } from "../lib/catalog";
 export default function MainLayout() {
   const { pathname } = useLocation();
@@ -22,7 +21,7 @@ export default function MainLayout() {
         : section === "albums"
           ? data?.albums.find((item) => item.id === Number(id))?.title
           : data?.tracks.find((item) => item.id === Number(id))?.title;
-    document.title = `${item ?? names[section] ?? "Независимый звук"} / Raw Crownz Records`;
+    document.title = `${item ?? names[section] ?? "Sounds from Siberia"} / Raw Crownz Records`;
   }, [pathname, data]);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -40,7 +39,6 @@ export default function MainLayout() {
       >
         <Outlet />
       </main>
-      <Footer />
     </div>
   );
 }

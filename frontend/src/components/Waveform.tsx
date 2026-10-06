@@ -43,7 +43,7 @@ export default function Waveform({
         setStatus("Загрузка волны…");
         const saved = cache.get(track.audioUrl);
         const accent = getComputedStyle(element)
-          .getPropertyValue("--orange")
+          .getPropertyValue("--accent")
           .trim();
         instance = WaveSurfer.create({
           container: element,

@@ -196,7 +196,7 @@ export default function EntityPage({
               {!related.length && (
                 <div className="empty-state">
                   {kind === "track"
-                    ? "Пока это единственный трек. Открой каталог и найди новый звук."
+                    ? "Других треков пока нет. Остальные записи — в каталоге."
                     : "Здесь пока нет треков."}
                   <Link to="/beats">Все треки ↗</Link>
                 </div>

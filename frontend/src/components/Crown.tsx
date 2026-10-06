@@ -12,6 +12,7 @@ export default function Crown({
     "235 690 840 710",
     "4148 475 714 949",
     "1168 564 874 880",
+    "2170 865 850 510",
     "3178 813 876 548",
   ];
   const clipId = useId().replace(/:/g, "");

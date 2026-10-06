@@ -220,7 +220,7 @@ export default function AudioPlayer() {
           aria-label="Очередь воспроизведения"
         >
           <div className="queue-heading">
-            <h2>Дальше на волне</h2>
+            <h2>Очередь треков</h2>
             <button
               className="icon-button"
               aria-label="Закрыть очередь"
@@ -233,7 +233,7 @@ export default function AudioPlayer() {
             </button>
           </div>
           <p className="meta">
-            После последнего трека — случайный звук из каталога.
+            После последнего трека — случайный трек из каталога.
           </p>
           {queue.length ? (
             <ol>
@@ -313,7 +313,7 @@ export default function AudioPlayer() {
             {current ? (
               <Waveform key={current.audioUrl} track={current} height={34} />
             ) : (
-              <div className="idle-wave">ТВОЯ СЛЕДУЮЩАЯ ВОЛНА — В КАТАЛОГЕ</div>
+              <div className="idle-wave">ТРЕК ПОКА НЕ ВЫБРАН</div>
             )}
             <input
               aria-label="Позиция воспроизведения"
@@ -376,7 +376,7 @@ export default function AudioPlayer() {
             </>
           ) : (
             <div className="player-titles">
-              <span>Нажми play. Останься raw.</span>
+              <span>Выбери, что послушать</span>
               <small>Выбери трек из каталога</small>
             </div>
           )}

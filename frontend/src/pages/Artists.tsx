@@ -16,8 +16,8 @@ export default function ArtistsPage() {
     <div className="page-container">
       <PageHeading
         kicker="03 / THE PEOPLE"
-        title="Артисты"
-        description="Разные голоса. Один независимый звук. Знакомься с Raw Crownz."
+        title="Artists"
+        description="Кто делает биты, читает рэп и записывает миксы в Raw Crownz."
         count={catalog.data?.artists.length}
       />
       <div className="catalog-toolbar">

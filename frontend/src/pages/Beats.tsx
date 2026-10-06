@@ -21,8 +21,8 @@ export default function BeatsPage() {
     <div className="page-container">
       <PageHeading
         kicker="01 / THE SOUND"
-        title="Все треки"
-        description="Сырой звук. Честный грув. Нажми play и оставайся на волне."
+        title="Tracks"
+        description="Биты, рэп и диджейские миксы. Выбирай трек или слушай подряд."
         count={catalog.data?.tracks.length}
       />
       <div className="catalog-toolbar">
@@ -64,7 +64,7 @@ export default function BeatsPage() {
           <div className="empty-state">
             {query
               ? "Ничего не найдено. Попробуй другой запрос."
-              : "Первый звук уже на подходе. Треки появятся здесь."}
+              : "Пока нет записей. Треки появятся здесь после загрузки."}
           </div>
         )}
       </CatalogFeedback>

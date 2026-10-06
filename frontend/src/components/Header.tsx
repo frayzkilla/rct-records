@@ -1,4 +1,4 @@
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import Crown from "./Crown";
@@ -8,6 +8,7 @@ const links = [
   ["/albums", "Альбомы"],
   ["/artists", "Артисты"],
   ["/about", "О нас"],
+  ["/admin", "Вход для артистов"],
 ];
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -20,21 +21,25 @@ export default function Header() {
           onClick={() => setOpen(false)}
           aria-label="Raw Crownz Records — главная"
         >
-          <Crown />
+          <Crown variant={3} />
           <span>
-            RAW CROWNZ<small>INDEPENDENT RECORDS</small>
+            RAW CROWNZ<small>RECORDS / SIBERIA</small>
           </span>
         </Link>
         <nav className="desktop-nav" aria-label="Главная навигация">
           {links.map(([to, label]) => (
-            <NavLink key={to} to={to}>
-              {label}
+            <NavLink
+              key={to}
+              to={to}
+              aria-label={label}
+              className={({ isActive }) =>
+                `nav-tab ${isActive ? "active" : ""} ${to === "/admin" ? "nav-tab-account" : ""}`
+              }
+            >
+              <span>{label}</span>
             </NavLink>
           ))}
         </nav>
-        <Link className="header-cta" to="/beats">
-          Найди свой звук <ArrowUpRight size={16} />
-        </Link>
         <button
           className="menu-toggle icon-button"
           aria-label={open ? "Закрыть меню" : "Открыть меню"}
@@ -52,9 +57,13 @@ export default function Header() {
           aria-label="Мобильная навигация"
         >
           {links.map(([to, label]) => (
-            <NavLink key={to} to={to} onClick={() => setOpen(false)}>
-              {label}
-              <ArrowUpRight />
+            <NavLink
+              key={to}
+              to={to}
+              aria-label={label}
+              onClick={() => setOpen(false)}
+            >
+              <span>{label}</span>
             </NavLink>
           ))}
         </nav>

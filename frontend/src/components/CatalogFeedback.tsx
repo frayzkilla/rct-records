@@ -14,7 +14,7 @@ export default function CatalogFeedback({
     return (
       <div className="feedback" role="status">
         <span className="meta">LOADING / ЗАГРУЗКА</span>
-        <p>Подключаемся к звуку…</p>
+        <p>Загружаем каталог…</p>
         <div className="loading-line" />
       </div>
     );
