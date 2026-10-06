@@ -1,73 +1,23 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# FastAPI backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Запуск: `python -m uvicorn app.main:app --reload --port 3000` из каталога `backend` после установки `requirements.txt`. Настройка окружения и Docker описаны в [README проекта](../README.md).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+`app/config.py` — окружение и пути; `database.py` и `models.py` — соединение и модели; `schemas.py` — валидация; `security.py` — пароли, сессии и права; `auth.py` — вход и аккаунты; `catalog.py` — каталог и операции с контентом; `storage.py` — загрузка файлов; `main.py` — запуск и HTTP middleware.
 
-## Description
+## API
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Публичные запросы: `GET /api/artists`, `/api/beats`, `/api/albums`, `/api/albums/{id}/tracks`.
 
-## Installation
+Авторизация: `POST /api/auth/login` с JSON `username`, `password`; `GET /api/auth/me`; `POST /api/auth/logout`. Cookie сессии устанавливается сервером. Swagger доступен на `/docs`.
 
-```bash
-$ npm install
-```
+`GET /api/admin/catalog` возвращает контент, доступный вошедшему пользователю. `POST /api/{artists|albums|beats}` создаёт запись; `PUT /api/{artists|albums|beats}/{id}` обновляет; `DELETE` удаляет. Создание трека требует multipart с полем `audio`. Метаданные можно передавать JSON или multipart; файлы — только multipart. При обновлении отсутствующие поля сохраняются. `albumId=null` или пустое multipart-поле снимает привязку к альбому.
 
-## Running the app
+Загрузка: `audio` для треков, `cover` для треков и альбомов, `avatar` для артистов. Аудио: MP3, WAV, OGG, FLAC, M4A, AAC. Изображения: JPEG, PNG, WebP, GIF, AVIF. Лимит каждого файла задаётся `MAX_UPLOAD_BYTES`, по умолчанию 100 MiB. Проверяются расширение и MIME-тип; новые имена генерируются случайно. Неудачная загрузка откатывает запись и удаляет созданные файлы.
 
-```bash
-# development
-$ npm run start
+Удаление и замена записей сохраняют прежние файлы на диске, чтобы не потерять старые материалы или файлы, используемые существующим каталогом. Удаление артиста каскадно удаляет его треки, альбомы и аккаунты; удаление альбома сохраняет треки без привязки.
 
-# watch mode
-$ npm run start:dev
+`GET/POST /api/admins`, `PUT/DELETE /api/admins/{id}` доступны только суперадмину. Создание требует JSON `username`, `password` (8–128 символов), `artistId`. Обновление принимает только эти поля, роль задаётся сервером. Аккаунт `god-admin` нельзя удалить, переименовать или привязать к артисту; его пароль можно менять.
 
-# production mode
-$ npm run start:prod
-```
+## Совместимость с NestJS
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+Сохранены таблицы `artist`, `album`, `track`, их идентификаторы, camelCase-колонки и внешние ключи TypeORM. На старте SQLAlchemy создаёт отсутствующие таблицы, включая `admin_account` и `admin_session`, без пересоздания существующего каталога. Пути файлов возвращаются с начальным `/`, включая старые относительные ссылки `storage/...`. Изменения схемы в дальнейшем требуют явных миграций: `create_all` не меняет существующие колонки.

@@ -1,17 +1,8 @@
-FROM node:18-alpine
-
+FROM python:3.13-slim
 WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-RUN mkdir -p /app/storage/artists_images \
-    && mkdir -p /app/storage/tracks \
-    && mkdir -p /app/storage/covers \
-    && mkdir -p /app/storage/albums \
-    && chmod -R 777 /app/storage
-
-CMD ["npm", "run", "start:prod"]
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app ./app
+ENV STORAGE_PATH=/app/storage
+EXPOSE 3000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]

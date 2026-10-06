@@ -17,13 +17,18 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: yarik
-      DB_DATABASE: rawcrownz
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-yarik}
+      DB_DATABASE: ${DB_DATABASE:-rawcrownz}
+      GOD_ADMIN_PASSWORD: ${GOD_ADMIN_PASSWORD:?Set GOD_ADMIN_PASSWORD in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3001}
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-104857600}
     volumes:
       - ./storage:/app/storage:rw
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -32,8 +37,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: yarik
-      POSTGRES_DB: rawcrownz
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yarik}
+      POSTGRES_DB: ${DB_DATABASE:-rawcrownz}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - app-network
 

@@ -7,8 +7,7 @@ import BeatsPage from "../pages/Beats";
 import AboutPage from "../pages/About";
 import AlbumsPage from "../pages/Albums";
 import AdminPage from "../pages/AdminPage";
-import EditContentPage from "../pages/AdminEditPage";
-import { ProtectedRoute } from "../components/ProtectedRoute";
+import { Navigate } from "react-router-dom";
 
 export const useRoutesConfig = (): RouteObject[] => {
   const routes: RouteObject[] = [
@@ -38,19 +37,11 @@ export const useRoutesConfig = (): RouteObject[] => {
         },
         {
           path: "admin",
-          element: (
-            <ProtectedRoute>
-              <AdminPage />
-            </ProtectedRoute>
-          ),
+          element: <AdminPage />,
         },
         {
           path: "adminEdit",
-          element: (
-            <ProtectedRoute>
-              <EditContentPage />
-            </ProtectedRoute>
-          ),
+          element: <Navigate to="/admin" replace />,
         },
       ],
     },

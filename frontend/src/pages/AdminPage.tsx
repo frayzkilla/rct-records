@@ -1,384 +1,205 @@
 import { useEffect, useState } from "react";
-import { Plus, Upload, ImagePlus, UserPlus, Disc } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import type { FormEvent, ReactNode } from "react";
+import { api, ApiError, jsonRequest } from "../lib/api";
 
-type Tab = "tracks" | "albums" | "artists";
+type Account = { id: number; username: string; role: "god" | "artist"; artistId: number | null };
+type Artist = { id: number; name: string; bio: string; avatarUrl: string };
+type Album = { id: number; title: string; artistId: number; releaseDate: string; coverUrl: string; artist: string };
+type Track = { id: number; title: string; artistId: number; albumId: number | null; audioUrl: string; coverUrl: string; producer: string };
+type Catalog = { artists: Artist[]; albums: Album[]; beats: Track[] };
+type Tab = "beats" | "albums" | "artists" | "admins";
+type Item = Artist | Album | Track | Account;
+const labels: Record<Tab, string> = { beats: "Треки", albums: "Альбомы", artists: "Артисты", admins: "Администраторы" };
+const inputClass = "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37]";
+const buttonClass = "rounded-lg bg-[#D4AF37] px-5 py-3 font-semibold text-black disabled:opacity-50";
 
-const AdminPage = () => {
-  const navigate = useNavigate();
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return <label className="block space-y-2"><span className="text-sm text-zinc-300">{label}</span>{children}</label>;
+}
 
-  const [tab, setTab] = useState<Tab>("tracks");
-  const [artists, setArtists] = useState<{ id: string; name: string }[]>([]);
-  const [albums, setAlbums] = useState<{ id: string; title: string }[]>([]);
+function Editor({ tab, item, catalog, account, busy, onSave, onCancel }: {
+  tab: Tab; item: Item | null; catalog: Catalog; account: Account; busy: boolean;
+  onSave: (event: FormEvent<HTMLFormElement>) => void; onCancel: () => void;
+}) {
+  const track = item && "audioUrl" in item ? item : null;
+  const album = item && "releaseDate" in item ? item : null;
+  const artist = item && "bio" in item ? item : null;
+  const admin = item && "username" in item ? item : null;
+  const [artistId, setArtistId] = useState(String(track?.artistId ?? album?.artistId ?? admin?.artistId ?? account.artistId ?? catalog.artists[0]?.id ?? ""));
+  const isGodAccount = admin?.role === "god";
+  return (
+    <form onSubmit={onSave} className="space-y-5 rounded-xl border border-[#D4AF37]/30 bg-zinc-900 p-6">
+      <h2 className="text-xl text-[#D4AF37]">{item ? "Редактирование" : "Добавление"}: {labels[tab].toLowerCase()}</h2>
+      <fieldset disabled={busy} className="space-y-5">
+        {tab === "admins" ? <>
+          <Field label="Логин"><input className={inputClass} name="username" defaultValue={admin?.username ?? ""} required maxLength={100} disabled={isGodAccount} autoComplete="off" /></Field>
+          <Field label={admin ? "Новый пароль (оставьте пустым, чтобы сохранить текущий)" : "Пароль"}>
+            <input className={inputClass} type="password" name="password" required={!admin} minLength={8} maxLength={128} autoComplete="new-password" />
+          </Field>
+        </> : tab === "artists" ? <>
+          <Field label="Имя артиста"><input className={inputClass} name="name" defaultValue={artist?.name ?? ""} required maxLength={200} /></Field>
+          <Field label="Биография"><textarea className={inputClass} name="bio" defaultValue={artist?.bio ?? ""} rows={4} maxLength={10000} /></Field>
+          {artist?.avatarUrl && <img src={artist.avatarUrl} alt="Аватар" className="h-24 w-24 rounded-lg object-cover" />}
+          <Field label="Аватар"><input className={inputClass} type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></Field>
+        </> : <>
+          <Field label="Название"><input className={inputClass} name="title" defaultValue={track?.title ?? album?.title ?? ""} required maxLength={200} /></Field>
+          {tab === "albums" && <Field label="Дата релиза"><input className={inputClass} type="date" name="releaseDate" defaultValue={album?.releaseDate ?? ""} required /></Field>}
+        </>}
+        {tab !== "artists" && !isGodAccount && (
+          account.role === "god" ? <Field label="Артист">
+            <select className={inputClass} name="artistId" value={artistId} onChange={event => setArtistId(event.target.value)} required>
+              <option value="">Выберите артиста</option>
+              {catalog.artists.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}
+            </select>
+          </Field> : <input type="hidden" name="artistId" value={account.artistId ?? ""} />
+        )}
+        {tab === "beats" && <>
+          <Field label="Альбом"><select className={inputClass} key={artistId} name="albumId" defaultValue={String(track?.albumId ?? "")}>
+            <option value="">Без альбома</option>
+            {catalog.albums.filter(row => String(row.artistId) === artistId).map(row => <option key={row.id} value={row.id}>{row.title}</option>)}
+          </select></Field>
+          {track?.audioUrl && <audio controls src={track.audioUrl} className="w-full" />}
+          <Field label={track ? "Заменить аудиофайл" : "Аудиофайл"}><input className={inputClass} type="file" name="audio" accept=".mp3,.wav,.ogg,.flac,.m4a,.aac" required={!track} /></Field>
+        </>}
+        {(tab === "beats" || tab === "albums") && <>
+          {(track?.coverUrl || album?.coverUrl) && <img src={track?.coverUrl || album?.coverUrl} alt="Обложка" className="h-24 w-24 rounded-lg object-cover" />}
+          <Field label="Обложка"><input className={inputClass} type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" /></Field>
+        </>}
+        <div className="flex flex-wrap gap-3">
+          <button className={buttonClass} type="submit">{busy ? "Сохранение…" : "Сохранить"}</button>
+          <button className="rounded-lg bg-zinc-800 px-5 py-3" type="button" onClick={onCancel}>Отмена</button>
+        </div>
+      </fieldset>
+    </form>
+  );
+}
 
-  const [trackTitle, setTrackTitle] = useState("");
-  const [trackAudio, setTrackAudio] = useState<File | null>(null);
-  const [trackCover, setTrackCover] = useState<File | null>(null);
-  const [trackArtistId, setTrackArtistId] = useState("");
-  const [trackAlbumId, setTrackAlbumId] = useState("");
-
-  const [albumTitle, setAlbumTitle] = useState("");
-  const [albumDate, setAlbumDate] = useState("");
-  const [albumCover, setAlbumCover] = useState<File | null>(null);
-  const [albumArtistId, setAlbumArtistId] = useState("");
-
-  const [artistName, setArtistName] = useState("");
-  const [artistBio, setArtistBio] = useState("");
-  const [artistAvatar, setArtistAvatar] = useState<File | null>(null);
-
-  //   const ADMIN_KEY = "rawcrownz_secret_2025";
+export default function AdminPage() {
+  const [account, setAccount] = useState<Account | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [catalog, setCatalog] = useState<Catalog>({ artists: [], albums: [], beats: [] });
+  const [admins, setAdmins] = useState<Account[]>([]);
+  const [tab, setTab] = useState<Tab>("beats");
+  const [editor, setEditor] = useState<{ item: Item | null } | null>(null);
+  const [editorKey, setEditorKey] = useState(0);
 
   useEffect(() => {
-    // fetch("http://localhost:3000/api/artists")
-    fetch("/api/artists")
-      .then((res) => res.json())
-      .then(setArtists)
-      .catch((err) => console.error("Ошибка при загрузке артистов", err));
-
-    // fetch("http://localhost:3000/api/albums")
-    fetch("/api/albums")
-      .then((res) => res.json())
-      .then(setAlbums);
+    let active = true;
+    api<Account>("/auth/me").then(value => { if (active) setAccount(value); }).catch(err => {
+      if (active && (!(err instanceof ApiError) || err.status !== 401)) setError(err instanceof Error ? err.message : "Ошибка подключения");
+    }).finally(() => { if (active) setChecking(false); });
+    return () => { active = false; };
   }, []);
 
-  const upload = async (endpoint: string, data: FormData) => {
+  useEffect(() => {
+    if (!account) return;
+    let active = true;
+    setLoading(true);
+    Promise.all([api<Catalog>("/admin/catalog"), account.role === "god" ? api<Account[]>("/admins") : Promise.resolve([])])
+      .then(([data, users]) => { if (active) { setCatalog(data); setAdmins(users); } })
+      .catch(err => { if (active) { setError(err instanceof Error ? err.message : "Ошибка загрузки"); if (err instanceof ApiError && err.status === 401) setAccount(null); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [account]);
+
+  const handleError = (err: unknown) => {
+    setError(err instanceof Error ? err.message : "Не удалось выполнить запрос");
+    if (err instanceof ApiError && err.status === 401) { setAccount(null); setEditor(null); }
+  };
+
+  const refresh = async () => {
+    if (!account) return;
+    const [data, users] = await Promise.all([api<Catalog>("/admin/catalog"), account.role === "god" ? api<Account[]>("/admins") : Promise.resolve([])]);
+    setCatalog(data);
+    setAdmins(users);
+  };
+
+  const login = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setBusy(true); setError(""); setNotice("");
     try {
-      // await fetch(`http://localhost:3000/api/${endpoint}`, {
-      await fetch(`/api/${endpoint}`, {
-        method: "POST",
-        body: data,
-      });
-      alert("Успешно отправлено");
-    } catch (error) {
-      alert("Ошибка при отправке");
-      console.error(error);
+      const user = await api<Account>("/auth/login", jsonRequest("POST", { username: data.get("username"), password: data.get("password") }));
+      setTab("beats"); setEditor(null); setAccount(user);
+    } catch (err) { handleError(err); } finally { setBusy(false); }
+  };
+
+  const logout = async () => {
+    setBusy(true); setError("");
+    try { await api("/auth/logout", { method: "POST" }); setAccount(null); setEditor(null); setNotice(""); }
+    catch (err) { handleError(err); } finally { setBusy(false); }
+  };
+
+  const save = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editor) return;
+    const data = new FormData(event.currentTarget);
+    for (const [key, value] of [...data.entries()]) {
+      if (value instanceof File && value.size === 0) data.delete(key);
     }
+    const item = editor.item;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      let options: RequestInit = { method: item ? "PUT" : "POST", body: data };
+      if (tab === "admins") {
+        const body: Record<string, string | number> = {};
+        for (const [key, value] of data.entries()) if (typeof value === "string" && value) body[key] = key === "artistId" ? Number(value) : value;
+        options = jsonRequest(item ? "PUT" : "POST", body);
+      }
+      await api(`/${tab}${item ? `/${item.id}` : ""}`, options);
+      setEditor(null); setNotice("Изменения сохранены");
+      if (tab === "admins" && item?.id === account?.id) { setAccount(null); setNotice("Пароль изменён. Войдите снова"); }
+      else await refresh();
+    } catch (err) { handleError(err); } finally { setBusy(false); }
   };
 
-  const handleTrackSubmit = async () => {
-    const formData = new FormData();
-    formData.append("title", trackTitle);
-    formData.append("artistId", trackArtistId);
-    if (trackAlbumId) formData.append("albumId", trackAlbumId);
-    if (trackAudio) formData.append("audio", trackAudio);
-    if (trackCover) formData.append("cover", trackCover);
-    await upload("beats", formData);
+  const remove = async (item: Item) => {
+    const message = tab === "artists" ? "Удалить артиста, все его треки, альбомы и аккаунты?" : "Удалить выбранную запись?";
+    if (!window.confirm(message)) return;
+    setBusy(true); setError(""); setNotice("");
+    try { await api(`/${tab}/${item.id}`, { method: "DELETE" }); setEditor(null); await refresh(); setNotice("Запись удалена"); }
+    catch (err) { handleError(err); } finally { setBusy(false); }
   };
 
-  const handleAlbumSubmit = async () => {
-    const formData = new FormData();
-    formData.append("title", albumTitle);
-    formData.append("releaseDate", albumDate);
-    formData.append("artistId", albumArtistId);
-    if (albumCover) formData.append("cover", albumCover);
-    await upload("albums", formData);
-  };
+  const openEditor = (item: Item | null) => { setEditor({ item }); setEditorKey(value => value + 1); setError(""); setNotice(""); };
+  const items: Item[] = tab === "admins" ? admins : catalog[tab];
+  const tabs: Tab[] = account?.role === "god" ? ["beats", "albums", "artists", "admins"] : ["beats", "albums"];
 
-  const handleArtistSubmit = async () => {
-    const formData = new FormData();
-    formData.append("name", artistName);
-    formData.append("bio", artistBio);
-    if (artistAvatar) formData.append("avatar", artistAvatar);
-    await upload("artists", formData);
-  };
-
-  const FileInput = ({
-    onChange,
-    file,
-    label,
-    icon: Icon,
-  }: {
-    onChange: (file: File | null) => void;
-    file: File | null;
-    label: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    icon: any;
-  }) => (
-    <div className="relative">
-      <input
-        type="file"
-        onChange={(e) => onChange(e.target.files?.[0] || null)}
-        className="opacity-0 absolute w-full h-full cursor-pointer"
-      />
-      <div
-        className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                    flex items-center justify-between hover:bg-zinc-800 transition-colors"
-      >
-        <span className="text-zinc-400 truncate">{file?.name || label}</span>
-        <Icon className="text-[#D4AF37] flex-shrink-0" size={20} />
-      </div>
+  return <div className="min-h-screen bg-black px-4 pb-40 pt-28 text-white">
+    <div className="mx-auto max-w-4xl space-y-6">
+      <h1 className="text-3xl font-bold text-[#D4AF37]">{account?.role === "god" ? "GOD MODE" : account ? "Кабинет артиста" : "Вход в админку"}</h1>
+      {error && <p role="alert" className="rounded-lg border border-red-700 bg-red-950 p-4">{error}</p>}
+      {notice && <p role="status" className="rounded-lg bg-zinc-900 p-4 text-[#D4AF37]">{notice}</p>}
+      {checking ? <p>Проверка сессии…</p> : !account ?
+        <form onSubmit={login} className="max-w-md space-y-5 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <Field label="Логин"><input className={inputClass} name="username" autoComplete="username" required maxLength={100} /></Field>
+          <Field label="Пароль"><input className={inputClass} name="password" type="password" autoComplete="current-password" required maxLength={128} /></Field>
+          <button className={buttonClass} disabled={busy}>{busy ? "Вход…" : "Войти"}</button>
+        </form> : <>
+          <div className="flex items-center justify-between gap-4"><p className="text-zinc-400">{account.username}{account.role === "artist" && " · Только ваши треки и альбомы"}</p><button onClick={logout} disabled={busy} className="rounded-lg border border-zinc-700 px-4 py-2">Выйти</button></div>
+          <nav aria-label="Разделы админки" className="flex flex-wrap gap-3 border-b border-zinc-800 pb-4">
+            {tabs.map(value => <button key={value} disabled={busy} onClick={() => { setTab(value); setEditor(null); setError(""); setNotice(""); }} className={`rounded-lg px-4 py-2 ${tab === value ? "bg-[#D4AF37] text-black" : "bg-zinc-900"}`}>{labels[value]}</button>)}
+          </nav>
+          {loading ? <p>Загрузка каталога…</p> : <>
+            {!editor && <button className={buttonClass} disabled={busy} onClick={() => openEditor(null)}>Добавить</button>}
+            {editor && <Editor key={editorKey} tab={tab} item={editor.item} catalog={catalog} account={account} busy={busy} onSave={save} onCancel={() => setEditor(null)} />}
+            <div className="space-y-3">
+              {items.length === 0 && <p className="text-zinc-400">Здесь пока нет записей</p>}
+              {items.map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+                <div><h2 className="font-semibold">{"username" in item ? item.username : "name" in item ? item.name : item.title}</h2>
+                  <p className="text-sm text-zinc-400">{"username" in item ? item.role === "god" ? "Суперадмин" : catalog.artists.find(row => row.id === item.artistId)?.name : "producer" in item ? item.producer : "artist" in item ? item.artist : ""}</p>
+                </div>
+                <div className="flex gap-3"><button disabled={busy} className="text-[#D4AF37]" onClick={() => openEditor(item)}>Редактировать</button>
+                  {!("role" in item && item.role === "god") && <button disabled={busy} className="text-red-400" onClick={() => remove(item)}>Удалить</button>}
+                </div>
+              </div>)}
+            </div>
+          </>}
+        </>}
     </div>
-  );
-
-  return (
-    <div className="bg-black text-white min-h-screen pt-24 pb-12 px-4 mb-24">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-12 text-center">
-          <h1
-            className="text-4xl md:text-5xl font-bold font-mono uppercase tracking-wider 
-                        text-transparent bg-clip-text bg-gradient-to-r from-[#C9A227] to-[#D4AF37]"
-          >
-            🎚️ RAW ADMIN
-          </h1>
-          <p className="text-zinc-400 mt-2">Управление контентом</p>
-        </div>
-
-        <div className="flex space-x-8 mb-12 border-b border-[#C9A227]/30">
-          {(["tracks", "albums", "artists"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`pb-4 px-2 text-lg font-mono uppercase tracking-wider transition-all
-                ${
-                  tab === t
-                    ? "text-[#D4AF37] border-b-2 border-[#D4AF37]"
-                    : "text-zinc-400 hover:text-zinc-200"
-                }`}
-            >
-              {t === "tracks"
-                ? "Треки"
-                : t === "albums"
-                  ? "Альбомы"
-                  : "Артисты"}
-            </button>
-          ))}
-          <button
-            onClick={() => navigate("/adminEdit")}
-            className={`pb-4 px-2 text-lg font-mono uppercase tracking-wider transition-all text-zinc-400 hover:text-zinc-200`}
-          >
-            Удалить/редактировать
-          </button>
-        </div>
-
-        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl p-8 shadow-2xl border border-[#C9A227]/20">
-          {tab === "tracks" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-mono text-[#D4AF37] mb-6 flex items-center gap-2">
-                <Disc size={24} /> Добавить новый трек
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Название трека
-                  </label>
-                  <input
-                    type="text"
-                    value={trackTitle}
-                    onChange={(e) => setTrackTitle(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Артист
-                  </label>
-                  <select
-                    value={trackArtistId}
-                    onChange={(e) => setTrackArtistId(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
-                  >
-                    <option value="">Выберите артиста</option>
-                    {artists.map((a) => (
-                      <option key={a.id} value={a.id} className="bg-zinc-800">
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Альбом (опционально)
-                  </label>
-                  <select
-                    value={trackAlbumId}
-                    onChange={(e) => setTrackAlbumId(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
-                  >
-                    <option value="">Не привязан к альбому</option>
-                    {albums.map((a) => (
-                      <option key={a.id} value={a.id} className="bg-zinc-800">
-                        {a.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
-                      Аудио файл
-                    </label>
-                    <FileInput
-                      onChange={setTrackAudio}
-                      file={trackAudio}
-                      label="Выберите аудиофайл"
-                      icon={Upload}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
-                      Обложка
-                    </label>
-                    <FileInput
-                      onChange={setTrackCover}
-                      file={trackCover}
-                      label="Выберите обложку"
-                      icon={ImagePlus}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleTrackSubmit}
-                className="w-full bg-[#C9A227] hover:bg-[#D4AF37] text-black font-bold py-3 px-6 rounded-lg
-                         transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-              >
-                <Plus size={20} />
-                Добавить трек
-              </button>
-            </div>
-          )}
-
-          {tab === "albums" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-mono text-[#D4AF37] mb-6 flex items-center gap-2">
-                <Disc size={24} /> Добавить новый альбом
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Название альбома
-                  </label>
-                  <input
-                    type="text"
-                    value={albumTitle}
-                    onChange={(e) => setAlbumTitle(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Дата релиза
-                  </label>
-                  <input
-                    type="date"
-                    value={albumDate}
-                    onChange={(e) => setAlbumDate(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Артист
-                  </label>
-                  <select
-                    value={albumArtistId}
-                    onChange={(e) => setAlbumArtistId(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
-                  >
-                    <option value="">Выберите артиста</option>
-                    {artists.map((a) => (
-                      <option key={a.id} value={a.id} className="bg-zinc-800">
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Обложка альбома
-                  </label>
-                  <FileInput
-                    onChange={setAlbumCover}
-                    file={albumCover}
-                    label="Выберите обложку"
-                    icon={ImagePlus}
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleAlbumSubmit}
-                className="w-full bg-[#C9A227] hover:bg-[#D4AF37] text-black font-bold py-3 px-6 rounded-lg
-                         transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-              >
-                <Plus size={20} />
-                Добавить альбом
-              </button>
-            </div>
-          )}
-
-          {tab === "artists" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-mono text-[#D4AF37] mb-6 flex items-center gap-2">
-                <UserPlus size={24} /> Добавить нового артиста
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Имя артиста
-                  </label>
-                  <input
-                    type="text"
-                    value={artistName}
-                    onChange={(e) => setArtistName(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Аватар
-                  </label>
-                  <FileInput
-                    onChange={setArtistAvatar}
-                    file={artistAvatar}
-                    label="Выберите аватар"
-                    icon={ImagePlus}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Биография
-                  </label>
-                  <textarea
-                    value={artistBio}
-                    onChange={(e) => setArtistBio(e.target.value)}
-                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 
-                             focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent h-32"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleArtistSubmit}
-                className="w-full bg-[#C9A227] hover:bg-[#D4AF37] text-black font-bold py-3 px-6 rounded-lg
-                         transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-              >
-                <Plus size={20} />
-                Добавить артиста
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default AdminPage;
+  </div>;
+}
