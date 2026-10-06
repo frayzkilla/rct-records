@@ -67,9 +67,9 @@ export default function Home() {
         </div>
         <div className="hero-bottom">
           <p>
-            Биты, рэп и миксы от нашей команды из Сибири.
+            Здесь музыка от наших парней.
             <br />
-            Сделали — выложили. Теперь можно послушать.
+            Звук из Сибири в разных жанрах.
           </p>
           <div className="hero-actions">
             <Link className="button" to="/beats">

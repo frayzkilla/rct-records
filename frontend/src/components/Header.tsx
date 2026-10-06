@@ -8,7 +8,7 @@ const links = [
   ["/albums", "Альбомы"],
   ["/artists", "Артисты"],
   ["/about", "О нас"],
-  ["/admin", "Вход для артистов"],
+  ["/admin", "Для артистов"],
 ];
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function Header() {
               to={to}
               aria-label={label}
               className={({ isActive }) =>
-                `nav-tab ${isActive ? "active" : ""} ${to === "/admin" ? "nav-tab-account" : ""}`
+                `nav-tab ${isActive ? "active" : ""}`
               }
             >
               <span>{label}</span>
