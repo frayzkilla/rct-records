@@ -1,25 +1,20 @@
-const Footer = () => {
+import { Link } from "react-router-dom";
+import Crown from "./Crown";
+export default function Footer() {
   return (
-    <footer className="w-full bg-black text-white px-6 py-8">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm">
-        <div className="mb-4 md:mb-0">
-          &copy; {new Date().getFullYear()} Raw Crownz Records. Все права
-          защищены.
-        </div>
-        <div className="space-x-4">
-          <a href="/privacy" className="hover:text-gray-400">
-            Политика конфиденциальности
-          </a>
-          <a href="/terms" className="hover:text-gray-400">
-            Условия использования
-          </a>
-          <a href="/contacts" className="hover:text-gray-400">
-            Контакты
-          </a>
-        </div>
+    <footer className="site-footer">
+      <div className="footer-mark">
+        <Crown />
+        <span>RAW CROWNZ RECORDS</span>
       </div>
+      <div className="footer-links">
+        <Link to="/beats">Слушать</Link>
+        <Link to="/about">О команде</Link>
+        <Link to="/admin">Вход для артистов ↗</Link>
+      </div>
+      <span className="meta">
+        © {new Date().getFullYear()} / INDEPENDENT SOUND
+      </span>
     </footer>
   );
-};
-
-export default Footer;
+}

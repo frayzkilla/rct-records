@@ -1,185 +1,396 @@
-import { Play, Pause } from "lucide-react";
+import {
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  ListMusic,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useCatalog, formatTime } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
+import Artwork from "./Artwork";
+import Waveform from "./Waveform";
 
 export default function AudioPlayer() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const track = usePlayerStore((state) => state.track);
-  const isPlaying = usePlayerStore((state) => state.isPlaying);
-  const title = usePlayerStore((state) => state.title);
-  const artist = usePlayerStore((state) => state.artist);
-  const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
-
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isSeeking, setIsSeeking] = useState(false);
-
-  const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return "0:00";
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      if (isSeeking) return;
-      const currentTime = audio.currentTime;
-      const totalDuration = audio.duration;
-
-      if (!isNaN(totalDuration)) {
-        setProgress((currentTime / totalDuration) * 100);
-        setDuration(totalDuration);
-      }
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-    };
-
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [setIsPlaying, isSeeking]);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [buffering, setBuffering] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const queueButtonRef = useRef<HTMLButtonElement>(null);
+  const rememberedVolume = useRef(0.8);
+  const catalog = useCatalog();
+  const {
+    current,
+    queue,
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    seekTarget,
+    error,
+    toggle,
+    next,
+    previous,
+    seek,
+    play,
+  } = usePlayerStore();
+  const playable = catalog.data?.tracks.filter((track) => track.audioUrl) ?? [];
+  const album = catalog.data?.albums.find(
+    (item) => item.id === current?.albumId,
+  );
 
   useEffect(() => {
-    if (!track) return;
-
-    // const fileName = track.split("/").pop()?.replace(".mp3", "") ?? "";
-    // const [rawArtist, rawTitle] = fileName.split("_");
-
-    // setArtist(rawArtist || "Unknown Artist");
-    // setTitle(rawTitle || "Unknown Title");
-
+    if (catalog.data)
+      usePlayerStore.setState({
+        catalog: catalog.data.tracks.filter((track) => track.audioUrl),
+      });
+  }, [catalog.data]);
+  useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !track) return;
-
-    audio.src = track;
+    if (!audio || !current) return;
+    audio.src = current.audioUrl;
     audio.load();
-    setProgress(0);
-    setDuration(0);
-
-    const handleCanPlay = () => {
-      if (isPlaying) {
-        audio
-          .play()
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.warn("Autoplay failed:", err);
-          });
-      }
-    };
-
-    audio.addEventListener("canplay", handleCanPlay);
-
     return () => {
-      audio.removeEventListener("canplay", handleCanPlay);
+      audio.pause();
     };
-  }, [track]);
-
+  }, [current]);
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
-
-    if (!isPlaying) {
-      audio.pause();
-    }
-  }, [isPlaying]);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
+    if (!audio || !current) return;
     if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      audio.play();
-      setIsPlaying(true);
+      const source = current.audioUrl;
+      audio.play().catch((reason: DOMException) => {
+        if (
+          reason.name === "AbortError" ||
+          usePlayerStore.getState().current?.audioUrl !== source
+        )
+          return;
+        usePlayerStore.setState({
+          isPlaying: false,
+          error:
+            reason.name === "NotAllowedError"
+              ? "Нажми play, чтобы начать воспроизведение."
+              : "Не удалось воспроизвести аудио. Попробуй ещё раз или выбери другой трек.",
+        });
+      });
+    } else audio.pause();
+  }, [isPlaying, current, seekTarget.serial]);
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !current) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: current.title,
+      artist: current.producer,
+      album: album?.title ?? "Raw Crownz Records",
+      artwork: current.coverUrl
+        ? [{ src: new URL(current.coverUrl, window.location.href).href }]
+        : [],
+    });
+    const handlers: Partial<
+      Record<MediaSessionAction, MediaSessionActionHandler>
+    > = {
+      play: () => usePlayerStore.setState({ isPlaying: true, error: "" }),
+      pause: () => usePlayerStore.setState({ isPlaying: false }),
+      nexttrack: next,
+      previoustrack: previous,
+      seekto: (details) => {
+        if (details.seekTime !== undefined) seek(details.seekTime);
+      },
+      seekbackward: (details) =>
+        seek(
+          Math.max(
+            0,
+            usePlayerStore.getState().currentTime - (details.seekOffset ?? 10),
+          ),
+        ),
+      seekforward: (details) => {
+        const state = usePlayerStore.getState();
+        seek(
+          Math.min(
+            state.duration,
+            state.currentTime + (details.seekOffset ?? 10),
+          ),
+        );
+      },
+    };
+    for (const [action, handler] of Object.entries(handlers)) {
+      try {
+        navigator.mediaSession.setActionHandler(
+          action as MediaSessionAction,
+          handler,
+        );
+      } catch {
+        continue;
+      }
     }
-  };
-
-  const handleSeekStart = () => {
-    setIsSeeking(true);
-  };
-
-  const handleSeekEnd = (value: number) => {
-    handleSeek(value);
-    setIsSeeking(false);
-  };
-
-  const handleSeekChange = (value: number) => {
-    if (!isSeeking) return;
-    setProgress(value);
-  };
-
-  const handleSeek = (value: number) => {
+    return () => {
+      for (const action of Object.keys(handlers)) {
+        try {
+          navigator.mediaSession.setActionHandler(
+            action as MediaSessionAction,
+            null,
+          );
+        } catch {
+          continue;
+        }
+      }
+    };
+  }, [current, album?.title, next, previous, seek]);
+  useEffect(() => {
+    if ("mediaSession" in navigator)
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+  }, [isPlaying]);
+  useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || duration === 0) return;
-
-    const newProgress = value;
-    const newTime = (newProgress / 100) * duration;
-    audio.currentTime = newTime;
-    if (!isPlaying) {
-      audio.pause();
+    if (audio && audio.readyState >= 1 && Number.isFinite(audio.duration)) {
+      audio.currentTime = Math.min(seekTarget.time, audio.duration);
+      usePlayerStore.setState({ currentTime: audio.currentTime });
     }
+  }, [seekTarget]);
+  useEffect(() => {
+    if (!queueOpen) return;
+    panelRef.current?.focus();
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setQueueOpen(false);
+        queueButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [queueOpen]);
+
+  const handlePlay = () => {
+    if (current) toggle();
+    else if (playable[0]) play(playable[0], playable);
   };
-
-  const currentTime = (progress / 100) * duration;
-
+  const mute = () => {
+    if (volume) {
+      rememberedVolume.current = volume;
+      usePlayerStore.setState({ volume: 0 });
+    } else usePlayerStore.setState({ volume: rememberedVolume.current });
+  };
   return (
-    <div className="w-full bg-zinc-900 text-white p-4 md:p-6 border-t border-zinc-700 flex flex-col items-center justify-center gap-3 md:gap-4">
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl">
-        <div className="flex items-center gap-4 w-full md:flex-1">
-          <audio ref={audioRef} className="hidden" />
+    <div className="player-shell">
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        onLoadedMetadata={(event) => {
+          const audio = event.currentTarget;
+          const state = usePlayerStore.getState();
+          const total = Number.isFinite(audio.duration) ? audio.duration : 0;
+          audio.currentTime = Math.min(state.seekTarget.time, total);
+          usePlayerStore.setState({
+            duration: total,
+            currentTime: audio.currentTime,
+          });
+        }}
+        onTimeUpdate={(event) =>
+          usePlayerStore.setState({
+            currentTime: event.currentTarget.currentTime,
+          })
+        }
+        onEnded={next}
+        onPlaying={() => setBuffering(false)}
+        onCanPlay={() => setBuffering(false)}
+        onWaiting={() => setBuffering(true)}
+        onPause={() => setBuffering(false)}
+        onError={() => {
+          setBuffering(false);
+          usePlayerStore.setState({
+            isPlaying: false,
+            error:
+              "Аудиофайл недоступен. Выбери другой трек или попробуй ещё раз.",
+          });
+        }}
+      />
+      {queueOpen && (
+        <div
+          className="queue-panel"
+          ref={panelRef}
+          tabIndex={-1}
+          id="player-queue"
+          role="region"
+          aria-label="Очередь воспроизведения"
+        >
+          <div className="queue-heading">
+            <h2>Дальше на волне</h2>
+            <button
+              className="icon-button"
+              aria-label="Закрыть очередь"
+              onClick={() => {
+                setQueueOpen(false);
+                queueButtonRef.current?.focus();
+              }}
+            >
+              <X />
+            </button>
+          </div>
+          <p className="meta">
+            После последнего трека — случайный звук из каталога.
+          </p>
+          {queue.length ? (
+            <ol>
+              {queue.map((track, index) => (
+                <li
+                  key={track.id}
+                  className={track.id === current?.id ? "is-active" : ""}
+                >
+                  <button
+                    className="icon-button"
+                    aria-label={`Слушать ${track.title}`}
+                    onClick={() => play(track, queue)}
+                  >
+                    <Play size={16} />
+                  </button>
+                  <span className="meta">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <Link to={`/beats/${track.id}`}>{track.title}</Link>
+                  <Link to={`/artists/${track.artistId}`}>
+                    {track.producer}
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p>Выбери трек — он откроет очередь.</p>
+          )}
+        </div>
+      )}
+      {error && (
+        <div className="player-error" role="alert">
+          <span>{error}</span>
           <button
-            onClick={togglePlay}
-            className="p-2 md:p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition shadow-lg flex-shrink-0"
+            className="icon-button"
+            aria-label="Закрыть сообщение"
+            onClick={() => usePlayerStore.setState({ error: "" })}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+      <div className="player-inner">
+        <div className="player-controls">
+          <button
+            className="icon-button"
+            aria-label="Предыдущий трек"
+            disabled={!current}
+            onClick={previous}
+          >
+            <SkipBack size={19} fill="currentColor" />
+          </button>
+          <button
+            className="play-button"
+            aria-label={isPlaying ? "Пауза" : "Воспроизвести"}
+            disabled={!current && !playable.length}
+            onClick={handlePlay}
           >
             {isPlaying ? (
-              <Pause size={20} className="md:size-6" />
+              <Pause size={22} fill="currentColor" />
             ) : (
-              <Play size={20} className="md:size-6" />
+              <Play size={22} fill="currentColor" />
             )}
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-base md:text-lg font-mono uppercase tracking-widest truncate">
-              {title || "Simon Said"}
-            </p>
-            <p className="text-xs md:text-sm text-zinc-400 font-mono uppercase tracking-widest truncate">
-              {artist || "Frayz The Raw"}
-            </p>
-          </div>
+          <button
+            className="icon-button"
+            aria-label="Следующий трек"
+            disabled={!playable.length}
+            onClick={next}
+          >
+            <SkipForward size={19} fill="currentColor" />
+          </button>
         </div>
-        <div className="w-full md:flex-1">
-          <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono uppercase tracking-wider">
-            <span className="w-12 text-left">{formatTime(currentTime)}</span>
+        <div className="player-progress">
+          <span className="player-time">{formatTime(currentTime)}</span>
+          <div className="player-wave">
+            {current ? (
+              <Waveform key={current.audioUrl} track={current} height={34} />
+            ) : (
+              <div className="idle-wave">ТВОЯ СЛЕДУЮЩАЯ ВОЛНА — В КАТАЛОГЕ</div>
+            )}
             <input
+              aria-label="Позиция воспроизведения"
               type="range"
-              className="w-full h-2 bg-[#C9A227] rounded-full cursor-pointer"
               min="0"
-              max="100"
-              step="1"
-              value={progress}
-              onChange={(e) => handleSeekChange(Number(e.target.value))}
-              onMouseDown={handleSeekStart}
-              onTouchStart={handleSeekStart}
-              onMouseUp={() => handleSeekEnd(progress)}
-              onTouchEnd={() => handleSeekEnd(progress)}
+              max={duration || 1}
+              step="0.1"
+              value={Math.min(currentTime, duration || 1)}
+              disabled={!duration}
+              onChange={(event) => seek(Number(event.target.value))}
             />
-            <span className="w-12 text-right">{formatTime(duration)}</span>
           </div>
+          <span className="player-time">{formatTime(duration)}</span>
         </div>
+        <div className="player-volume">
+          <button
+            className="icon-button"
+            aria-label={volume ? "Выключить звук" : "Включить звук"}
+            onClick={mute}
+          >
+            {volume ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(event) =>
+              usePlayerStore.setState({ volume: Number(event.target.value) })
+            }
+            aria-label="Громкость"
+          />
+        </div>
+        <div className="player-track">
+          {current ? (
+            <>
+              <Link to={`/beats/${current.id}`} className="player-art">
+                <Artwork src={current.coverUrl} title={current.title} />
+              </Link>
+              <div className="player-titles">
+                <Link to={`/beats/${current.id}`}>{current.title}</Link>
+                <div>
+                  <Link to={`/artists/${current.artistId}`}>
+                    {current.producer}
+                  </Link>
+                  {album && (
+                    <>
+                      <span> / </span>
+                      <Link to={`/albums/${album.id}`}>{album.title}</Link>
+                    </>
+                  )}
+                </div>
+                {buffering && isPlaying && (
+                  <span className="meta accent" role="status">
+                    Загрузка аудио…
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="player-titles">
+              <span>Нажми play. Останься raw.</span>
+              <small>Выбери трек из каталога</small>
+            </div>
+          )}
+        </div>
+        <button
+          ref={queueButtonRef}
+          className={`icon-button queue-toggle ${queueOpen ? "accent" : ""}`}
+          aria-label="Очередь воспроизведения"
+          aria-expanded={queueOpen}
+          aria-controls="player-queue"
+          onClick={() => setQueueOpen(!queueOpen)}
+        >
+          <ListMusic size={22} />
+        </button>
       </div>
     </div>
   );

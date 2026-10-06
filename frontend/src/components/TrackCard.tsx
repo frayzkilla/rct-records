@@ -1,64 +1,72 @@
-import { Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
+import { Link } from "react-router-dom";
+import type { Track, Album } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
-
-type TrackCardProps = {
-  title: string;
-  producer: string;
-  cover: string;
-  audio: string;
-};
-
+import Artwork from "./Artwork";
+import Waveform from "./Waveform";
 export default function TrackCard({
-  title,
-  producer,
-  cover,
-  audio,
-}: TrackCardProps) {
-  const setTrack = usePlayerStore((state) => state.setTrack);
-
-  const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
-
-  const setTitle = usePlayerStore((state) => state.setTitle);
-  const setArtist = usePlayerStore((state) => state.setArtist);
-
-  const playAudio = (audio: string) => {
-    setIsPlaying(false);
-    setTrack(audio);
-    setIsPlaying(true);
-    setTitle(title);
-    setArtist(producer);
-  };
-
+  track,
+  queue,
+  album,
+  index = 0,
+}: {
+  track: Track;
+  queue: Track[];
+  album?: Album;
+  index?: number;
+}) {
+  const active = usePlayerStore((state) => state.current?.id === track.id);
+  const playing = usePlayerStore((state) => state.isPlaying);
+  const play = usePlayerStore((state) => state.play);
+  const toggle = usePlayerStore((state) => state.toggle);
   return (
-    <div className="bg-zinc-900/80 hover:bg-zinc-900 border border-zinc-700 rounded-lg p-4 w-full group relative overflow-hidden transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-xl backdrop-blur-sm">
-      <div className="relative">
-        <img
-          src={cover}
-          className="w-full h-52 object-cover rounded-lg border-2 border-[#c9a3273f] group-hover:border-[#D4AF37]/40 transition-colors"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0  transition-opacity" />
-      </div>
-
-      <div className="flex items-center justify-between mt-4">
-        <div className="pr-4">
-          <h3 className="text-lg font-bold font-mono tracking-widest text-[#D4AF37] drop-shadow-md">
-            {title}
-          </h3>
-          <p className="text-zinc-400 text-sm mt-1 font-medium">{producer}</p>
+    <article className={`track-row ${active ? "is-active" : ""}`}>
+      <span className="track-number">{String(index + 1).padStart(2, "0")}</span>
+      <button
+        className="play-button"
+        aria-label={`${active && playing ? "Пауза" : "Слушать"}: ${track.title}`}
+        disabled={!track.audioUrl}
+        onClick={() => (active ? toggle() : play(track, queue))}
+      >
+        {active && playing ? (
+          <Pause size={20} fill="currentColor" />
+        ) : (
+          <Play size={20} fill="currentColor" />
+        )}
+      </button>
+      <Link to={`/beats/${track.id}`} className="track-art">
+        <Artwork src={track.coverUrl} title={track.title} />
+      </Link>
+      <div className="track-info">
+        <Link className="track-title" to={`/beats/${track.id}`}>
+          {track.title}
+        </Link>
+        <div className="track-meta">
+          <Link to={`/artists/${track.artistId}`}>
+            {track.producer || "Артист"}
+          </Link>
+          {album && (
+            <>
+              <span>/</span>
+              <Link to={`/albums/${album.id}`}>{album.title}</Link>
+            </>
+          )}
         </div>
-
-        <button
-          onClick={() => playAudio(audio)}
-          className="p-3 rounded-full bg-[#C9A227] hover:bg-[#D4AF37] transition-all 
-               shadow-lg hover:shadow-xl active:scale-95 group-hover:ring-2 group-hover:ring-[#D4AF37]/50"
-        >
-          <Play size={24} className="fill-current" />
-        </button>
       </div>
-
-      <div className="absolute bottom-0 left-0 h-1 bg-[#D4AF37]/20 w-full">
-        <div className="h-full bg-[#D4AF37] w-0 group-hover:w-full transition-all duration-500 ease-out" />
+      <div className="track-wave">
+        {track.audioUrl ? (
+          <Waveform track={track} queue={queue} />
+        ) : (
+          <span className="meta">Аудио недоступно</span>
+        )}
       </div>
-    </div>
+      <Link
+        className="track-detail"
+        to={`/beats/${track.id}`}
+        aria-label={`Открыть трек ${track.title}`}
+      >
+        ↗
+      </Link>
+    </article>
   );
 }

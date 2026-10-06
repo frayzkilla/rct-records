@@ -22,4 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+playwright-report/
+test-results/
+design-*.png

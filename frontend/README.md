@@ -1,54 +1,34 @@
-# React + TypeScript + Vite
+# Raw Crownz Records — frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19, TypeScript, Vite. Дизайн-система: [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md).
 
-Currently, two official plugins are available:
+## Запуск
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```powershell
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+API должен работать на порту 3000: Vite проксирует `/api` и `/storage`. Для Docker используйте инструкции в корневом README.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Проверки
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```powershell
+npm run build
+npm run lint
+npx playwright install chromium
+npm run test:e2e
 ```
+
+Браузерные тесты поднимают Vite при необходимости и перехватывают API, не меняя базу. Они проверяют переходы между сущностями без остановки аудио, реальные декодируемые волны, клавиатурную перемотку, очереди, случайный трек после конца списка, автопереход, историю, повтор единственного трека, ошибки аудио и пустые состояния. Размеры экрана: 320, 390, 768 и 1440 px. Аудиофикстура поддерживает HTTP Range, как сервер хранения.
+
+## Устройство интерфейса
+
+- React Router: каталоги и детали `/beats/:id`, `/artists/:id`, `/albums/:id`; `/tracks` — алиас каталога треков.
+- TanStack Query: общий кэш публичного каталога, проверка ответов через `api`, инвалидация после сохранения в админке.
+- Zustand: текущий трек, контекстная очередь, история треков вместе с их очередями, время и громкость.
+- Один основной HTMLAudioElement: непрерывное воспроизведение при смене маршрутов, обработка ошибок и Media Session для системных кнопок.
+- wavesurfer.js: волны реальных файлов, загрузка около viewport, кэш амплитуд до 50 файлов. Визуализации не воспроизводят собственное аудио.
+- CSS custom properties: тёмная палитра, MARS из локального OTF, адаптивные сетки, focus и reduced motion.
+
+Волны декодируются в браузере. Поддержка форматов зависит от браузера; если декодирование недоступно, основной плеер сохраняет стандартную перемотку. Для каталога с большими аудиофайлами следующим шагом может стать генерация peaks на сервере при загрузке: текущая реализация не меняет файловое хранилище и схему базы.

@@ -1,43 +1,73 @@
+import { useSearchParams } from "react-router-dom";
+import { Play } from "lucide-react";
+import { useCatalog } from "../lib/catalog";
+import { usePlayerStore } from "../store/AudioPlayerStore";
 import TrackCard from "../components/TrackCard";
-import { useEffect, useState } from "react";
-
-type Beat = {
-  id: string;
-  title: string;
-  audioUrl: string;
-  coverUrl: string;
-  producer: string;
-};
+import CatalogFeedback from "../components/CatalogFeedback";
+import CatalogSearch from "../components/CatalogSearch";
+import PageHeading from "../components/PageHeading";
 
 export default function BeatsPage() {
-  const [beats, setBeats] = useState<Beat[]>([]);
-
-  useEffect(() => {
-    // fetch("http://localhost:3000/api/beats")
-    fetch("/api/beats")
-      .then((res) => res.json())
-      .then(setBeats)
-      .catch((err) => console.error("Ошибка при загрузке битов", err));
-  }, []);
-
+  const catalog = useCatalog();
+  const [params] = useSearchParams();
+  const query = (params.get("q") ?? "").toLocaleLowerCase();
+  const tracks =
+    catalog.data?.tracks.filter((track) =>
+      `${track.title} ${track.producer} ${catalog.data?.albums.find((album) => album.id === track.albumId)?.title ?? ""}`
+        .toLocaleLowerCase()
+        .includes(query),
+    ) ?? [];
   return (
-    <div className="bg-black text-white font-sans px-6 py-24 min-h-screen mb-10">
-      <h2 className="page-header text-6xl md:text-7xl text-center text-transparent font-bold font-mono uppercase tracking-widest bg-clip-text bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#E0C068] mb-16">
-        БИТЫ FROM THE RAW
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4 md:px-8">
-        {beats.map((beat) => (
-          <TrackCard
-            key={beat.id}
-            title={beat.title}
-            producer={beat.producer}
-            // cover={`http://localhost:3000/${beat.coverUrl}`}
-            // audio={`http://localhost:3000/${beat.audioUrl}`}
-            cover={`${beat.coverUrl}`}
-            audio={`${beat.audioUrl}`}
-          />
-        ))}
+    <div className="page-container">
+      <PageHeading
+        kicker="01 / THE SOUND"
+        title="Все треки"
+        description="Сырой звук. Честный грув. Нажми play и оставайся на волне."
+        count={catalog.data?.tracks.length}
+      />
+      <div className="catalog-toolbar">
+        <CatalogSearch placeholder="Трек, артист или альбом" />
+        <button
+          className="button"
+          disabled={!tracks.some((track) => track.audioUrl)}
+          onClick={() => {
+            const track = tracks.find((item) => item.audioUrl);
+            if (track) usePlayerStore.getState().play(track, tracks);
+          }}
+        >
+          <Play size={18} /> Слушать всё
+        </button>
       </div>
+      <CatalogFeedback
+        loading={catalog.isPending}
+        error={catalog.error}
+        retry={catalog.refetch}
+      >
+        <div className="list-caption">
+          <span>ТРЕК / АРТИСТ</span>
+          <span>{tracks.length} В КАТАЛОГЕ</span>
+        </div>
+        <div className="track-list">
+          {tracks.map((track, index) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              index={index}
+              queue={tracks}
+              album={catalog.data?.albums.find(
+                (album) => album.id === track.albumId,
+              )}
+            />
+          ))}
+        </div>
+        {!tracks.length && (
+          <div className="empty-state">
+            {query
+              ? "Ничего не найдено. Попробуй другой запрос."
+              : "Первый звук уже на подходе. Треки появятся здесь."}
+          </div>
+        )}
+      </CatalogFeedback>
     </div>
   );
 }

@@ -1,18 +1,46 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/Header";
-import type { FC } from "react";
-
-const MainLayout: FC = () => {
+import Footer from "../components/Footer";
+import { useCatalog } from "../lib/catalog";
+export default function MainLayout() {
+  const { pathname } = useLocation();
+  const { data } = useCatalog();
+  useEffect(() => {
+    const [section, id] = pathname.split("/").filter(Boolean);
+    const names: Record<string, string> = {
+      beats: "Треки",
+      tracks: "Треки",
+      artists: "Артисты",
+      albums: "Альбомы",
+      about: "О команде",
+      admin: "Кабинет артиста",
+    };
+    const item =
+      section === "artists"
+        ? data?.artists.find((item) => item.id === Number(id))?.name
+        : section === "albums"
+          ? data?.albums.find((item) => item.id === Number(id))?.title
+          : data?.tracks.find((item) => item.id === Number(id))?.title;
+    document.title = `${item ?? names[section] ?? "Независимый звук"} / Raw Crownz Records`;
+  }, [pathname, data]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
   return (
-    <div className="flex flex-col bg-black min-h-screen">
-      <div className="fixed top-0 left-0 w-full z-50">
-        <Header />
-      </div>
-      <main className="flex-grow pt-10"> 
+    <div className="site-shell">
+      <a href="#main-content" className="skip-link">
+        К содержимому
+      </a>
+      <Header />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={pathname.startsWith("/admin") ? "admin-shell" : ""}
+      >
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
-};
-
-export default MainLayout;
+}

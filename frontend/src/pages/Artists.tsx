@@ -1,40 +1,46 @@
-import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useCatalog } from "../lib/catalog";
 import ArtistCard from "../components/ArtistCard";
-
-type Artist = {
-  id: string;
-  name: string;
-  bio: string;
-  avatarUrl: string;
-};
-
+import CatalogFeedback from "../components/CatalogFeedback";
+import CatalogSearch from "../components/CatalogSearch";
+import PageHeading from "../components/PageHeading";
 export default function ArtistsPage() {
-  const [artists, setArtists] = useState<Artist[]>([]);
-
-  useEffect(() => {
-    // fetch("http://localhost:3000/api/artists")
-    fetch("/api/artists")
-      .then((res) => res.json())
-      .then(setArtists)
-      .catch((err) => console.error("Ошибка при загрузке артистов", err));
-  }, []);
-
+  const catalog = useCatalog();
+  const [params] = useSearchParams();
+  const query = (params.get("q") ?? "").toLocaleLowerCase();
+  const artists =
+    catalog.data?.artists.filter((artist) =>
+      `${artist.name} ${artist.bio}`.toLocaleLowerCase().includes(query),
+    ) ?? [];
   return (
-    <div className="bg-black text-white font-sans px-4 sm:px-6 py-24 min-h-screen mb-10">
-      <h2 className="page-header text-4xl sm:text-6xl text-center text-transparent font-bold font-mono uppercase tracking-widest bg-clip-text bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#E0C068] mb-16">
-        НАШИ АРТИСТЫ
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4 md:px-8 max-w-7xl mx-auto">
-        {artists.map((artist) => (
-          <ArtistCard
-            key={artist.id}
-            name={artist.name}
-            description={artist.bio}
-            // image={`http://localhost:3000/${artist.avatarUrl}`}
-            image={`${artist.avatarUrl}`}
-          />
-        ))}
+    <div className="page-container">
+      <PageHeading
+        kicker="03 / THE PEOPLE"
+        title="Артисты"
+        description="Разные голоса. Один независимый звук. Знакомься с Raw Crownz."
+        count={catalog.data?.artists.length}
+      />
+      <div className="catalog-toolbar">
+        <CatalogSearch placeholder="Найти артиста" />
       </div>
+      <CatalogFeedback
+        loading={catalog.isPending}
+        error={catalog.error}
+        retry={catalog.refetch}
+      >
+        <div className="card-grid">
+          {artists.map((artist, index) => (
+            <ArtistCard key={artist.id} artist={artist} index={index} />
+          ))}
+        </div>
+        {!artists.length && (
+          <div className="empty-state">
+            {query
+              ? "Артист не найден. Попробуй другой запрос."
+              : "Скоро здесь появятся наши артисты."}
+          </div>
+        )}
+      </CatalogFeedback>
     </div>
   );
 }
