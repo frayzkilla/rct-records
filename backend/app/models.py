@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Date, DateTime, ForeignKey, String, Text, func, select
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from .database import Base
 
@@ -25,6 +25,12 @@ class Album(Base):
     tracks: Mapped[list["Track"]] = relationship(back_populates="album", passive_deletes="all")
 
 
+class TrackLike(Base):
+    __tablename__ = "track_like"
+    track_id: Mapped[int] = mapped_column(ForeignKey("track.id", ondelete="CASCADE"), primary_key=True)
+    visitor_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+
 class Track(Base):
     __tablename__ = "track"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -35,6 +41,12 @@ class Track(Base):
     albumId: Mapped[int | None] = mapped_column(ForeignKey("album.id", ondelete="SET NULL"))
     artist: Mapped[Artist | None] = relationship()
     album: Mapped[Album | None] = relationship(back_populates="tracks")
+    likes: Mapped[int] = column_property(
+        select(func.count(TrackLike.visitor_id))
+        .where(TrackLike.track_id == id)
+        .correlate_except(TrackLike)
+        .scalar_subquery()
+    )
 
 
 class Admin(Base):

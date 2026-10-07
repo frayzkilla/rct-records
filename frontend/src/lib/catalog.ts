@@ -25,7 +25,10 @@ export type Track = {
   producer: string;
   audioUrl: string;
   coverUrl: string;
+  likes: number;
 };
+
+export type Catalog = { tracks: Track[]; artists: Artist[]; albums: Album[] };
 
 export function useCatalog() {
   return useQuery({

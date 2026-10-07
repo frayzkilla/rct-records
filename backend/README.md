@@ -8,6 +8,8 @@
 
 Публичные запросы: `GET /api/artists`, `/api/beats`, `/api/albums`, `/api/albums/{id}/tracks`.
 
+Лайки без регистрации: `PUT /api/beats/{id}/like` принимает JSON `visitorId` (UUID браузера) и `liked` (boolean), возвращает `likes` и `liked`. Повторное сохранение того же состояния не меняет счётчик. Все ответы с треками содержат `likes`. Браузер хранит UUID и отмеченные треки в localStorage; отдельная таблица `track_like` создаётся при запуске без изменения существующих таблиц каталога.
+
 Авторизация: `POST /api/auth/login` с JSON `username`, `password`; `GET /api/auth/me`; `POST /api/auth/logout`. Cookie сессии устанавливается сервером. Swagger доступен на `/docs`.
 
 `GET /api/admin/catalog` возвращает контент, доступный вошедшему пользователю. `POST /api/{artists|albums|beats}` создаёт запись; `PUT /api/{artists|albums|beats}/{id}` обновляет; `DELETE` удаляет. Создание трека требует multipart с полем `audio`. Метаданные можно передавать JSON или multipart; файлы — только multipart. При обновлении отсутствующие поля сохраняются. `albumId=null` или пустое multipart-поле снимает привязку к альбому.

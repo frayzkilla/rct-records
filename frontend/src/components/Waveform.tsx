@@ -4,6 +4,14 @@ import type { Track } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
 
 const cache = new Map<string, { peaks: number[][]; duration: number }>();
+const skeletonPatterns = [
+  [8, 12, 18, 28, 36, 42, 34, 24, 16, 22, 32, 40, 46, 38, 26, 18, 10, 14, 24, 34, 44, 36, 28, 20, 14, 22, 30, 40, 32, 24, 16, 10],
+  [18, 24, 36, 44, 32, 22, 12, 8, 16, 28, 38, 46, 40, 30, 20, 14, 20, 32, 42, 34, 24, 16, 10, 18, 26, 38, 44, 36, 28, 18, 12, 8],
+  [10, 18, 30, 40, 34, 22, 16, 24, 36, 46, 38, 28, 18, 12, 8, 14, 22, 34, 42, 36, 26, 18, 24, 32, 44, 38, 28, 20, 12, 16, 24, 18],
+].map((pattern) => Array.from({ length: 96 }, (_, index) => {
+  const amplitude = pattern[index % pattern.length];
+  return `M${index * 2 + 0.5} ${(48 - amplitude) / 2}v${amplitude}`;
+}).join(""));
 
 export default function Waveform({
   track,
@@ -20,7 +28,8 @@ export default function Waveform({
   useEffect(() => {
     queueRef.current = queue;
   }, [queue]);
-  const [status, setStatus] = useState("Загрузка волны…");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [skeleton] = useState(() => skeletonPatterns[Math.floor(Math.random() * skeletonPatterns.length)]);
   const progress = usePlayerStore((state) =>
     state.current?.id === track.id && state.duration
       ? (state.currentTime / state.duration) * 100
@@ -40,7 +49,7 @@ export default function Waveform({
         )
           return;
         observer.disconnect();
-        setStatus("Загрузка волны…");
+        setStatus("loading");
         const saved = cache.get(track.audioUrl);
         const accent = getComputedStyle(element)
           .getPropertyValue("--accent")
@@ -60,7 +69,7 @@ export default function Waveform({
         wave.current = instance;
         instance.on("ready", () => {
           if (disposed || !instance) return;
-          setStatus("");
+          setStatus("ready");
           if (!saved) {
             if (cache.size >= 50) cache.delete(cache.keys().next().value!);
             cache.set(track.audioUrl, {
@@ -74,12 +83,12 @@ export default function Waveform({
           );
         });
         instance.on("error", () => {
-          if (!disposed) setStatus("Волна недоступна");
+          if (!disposed) setStatus("error");
         });
         instance
           .load(saved ? "" : track.audioUrl, saved?.peaks, saved?.duration)
           .catch(() => {
-            if (!disposed) setStatus("Волна недоступна");
+            if (!disposed) setStatus("error");
           });
       },
       { rootMargin: "120px" },
@@ -123,6 +132,8 @@ export default function Waveform({
   return (
     <div
       className="waveform"
+      data-loading={status === "loading"}
+      aria-busy={status === "loading"}
       role="slider"
       tabIndex={0}
       aria-label={`Перемотка: ${track.title}`}
@@ -162,8 +173,15 @@ export default function Waveform({
         }
       }}
     >
-      <div ref={container} style={{ minHeight: height }} />
-      {status && <span className="wave-status">{status}</span>}
+      <div className="wave-canvas" ref={container} style={{ minHeight: height }} />
+      {status === "loading" && (
+        <div className="wave-skeleton" aria-hidden="true">
+          <svg viewBox="0 0 192 48" preserveAspectRatio="none">
+            <path d={skeleton} stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          </svg>
+        </div>
+      )}
+      {status === "error" && <span className="wave-status">Волна недоступна</span>}
     </div>
   );
 }

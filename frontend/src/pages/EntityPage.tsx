@@ -7,6 +7,7 @@ import AlbumCard from "../components/AlbumCard";
 import TrackCard from "../components/TrackCard";
 import Waveform from "../components/Waveform";
 import CatalogFeedback from "../components/CatalogFeedback";
+import LikeButton from "../components/LikeButton";
 
 export default function EntityPage({
   kind,
@@ -116,21 +117,24 @@ export default function EntityPage({
                   )}
                 </div>
                 {artist?.bio && <p className="entity-bio">{artist.bio}</p>}
-                <button
-                  className="button"
-                  disabled={track ? !track.audioUrl : !playable.length}
-                  onClick={() => {
-                    const first = track ?? playable[0];
-                    if (first) usePlayerStore.getState().play(first, tracks);
-                  }}
-                >
-                  <Play size={18} fill="currentColor" />
-                  {kind === "artist"
-                    ? "Слушать артиста"
-                    : kind === "album"
-                      ? "Слушать альбом"
-                      : "Слушать трек"}
-                </button>
+                <div className="entity-actions">
+                  <button
+                    className="button"
+                    disabled={track ? !track.audioUrl : !playable.length}
+                    onClick={() => {
+                      const first = track ?? playable[0];
+                      if (first) usePlayerStore.getState().play(first, tracks);
+                    }}
+                  >
+                    <Play size={18} fill="currentColor" />
+                    {kind === "artist"
+                      ? "Слушать артиста"
+                      : kind === "album"
+                        ? "Слушать альбом"
+                        : "Слушать трек"}
+                  </button>
+                  {track && <LikeButton track={track} />}
+                </div>
                 {track?.audioUrl && (
                   <Waveform
                     key={track.audioUrl}

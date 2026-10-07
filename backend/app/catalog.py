@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import delete, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile
 
 from .database import get_db
-from .models import Admin, Album, Artist, Track
-from .schemas import AlbumInput, ArtistInput, TrackInput
+from .models import Admin, Album, Artist, Track, TrackLike
+from .schemas import AlbumInput, ArtistInput, TrackInput, TrackLikeInput
 from .security import check_owner, current_admin, god_admin
 from .storage import public_url, save_upload
 
@@ -38,6 +39,7 @@ def track_view(item: Track):
         "producer": item.artist.name if item.artist else "", "artist": item.artist.name if item.artist else "",
         "audioUrl": public_url(item.audioUrl),
         "coverUrl": public_url((item.album.coverUrl if item.album else None) or item.coverUrl),
+        "likes": item.likes,
     }
 
 
@@ -123,6 +125,25 @@ def tracks(db: Session = Depends(get_db)):
 @router.get("/albums")
 def albums(db: Session = Depends(get_db)):
     return [album_view(item) for item in db.scalars(select(Album).order_by(Album.id))]
+
+
+@router.put("/beats/{item_id}/like")
+def set_track_like(item_id: int, values: TrackLikeInput, db: Session = Depends(get_db)):
+    get_item(db, Track, item_id)
+    visitor_id = str(values.visitorId)
+    if values.liked:
+        try:
+            with db.begin_nested():
+                db.add(TrackLike(track_id=item_id, visitor_id=visitor_id))
+                db.flush()
+        except IntegrityError:
+            if not db.get(TrackLike, (item_id, visitor_id)):
+                raise
+    else:
+        db.execute(delete(TrackLike).where(TrackLike.track_id == item_id, TrackLike.visitor_id == visitor_id))
+    db.commit()
+    count = db.scalar(select(func.count()).select_from(TrackLike).where(TrackLike.track_id == item_id))
+    return {"likes": count, "liked": values.liked}
 
 
 @router.get("/albums/{item_id}/tracks")

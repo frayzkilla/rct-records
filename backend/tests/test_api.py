@@ -18,6 +18,41 @@ def test_public_reads_and_anonymous_writes(client):
     assert client.get("/api/admin/catalog").status_code == 401
 
 
+def test_anonymous_likes_are_persistent_idempotent_and_reversible(god, catalog):
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    route = f"/api/beats/{catalog['track']}/like"
+    first = {"visitorId": "58e7574f-bf32-4e1c-ad1c-01cfe68fe116", "liked": True}
+    second = {"visitorId": "61cedb8c-bc0c-405e-929e-cef34368fa96", "liked": True}
+    with TestClient(app) as anonymous:
+        assert anonymous.get("/api/auth/me").status_code == 401
+        assert anonymous.put(route, json=first).json() == {"likes": 1, "liked": True}
+        assert anonymous.put(route, json=first).json() == {"likes": 1, "liked": True}
+        assert anonymous.put(route, json=second).json() == {"likes": 2, "liked": True}
+    with TestClient(app) as restarted:
+        assert restarted.get("/api/beats").json()[0]["likes"] == 2
+        assert restarted.get(f"/api/albums/{catalog['album']}/tracks").json()[0]["likes"] == 2
+        assert restarted.put(route, json=first | {"liked": False}).json() == {"likes": 1, "liked": False}
+        assert restarted.put(route, json=first | {"liked": False}).json() == {"likes": 1, "liked": False}
+        assert restarted.put(route, json=first).json() == {"likes": 2, "liked": True}
+
+
+def test_like_validation_and_track_deletion(god, catalog):
+    from app.models import TrackLike
+
+    route = f"/api/beats/{catalog['track']}/like"
+    payload = {"visitorId": "58e7574f-bf32-4e1c-ad1c-01cfe68fe116", "liked": True}
+    assert god.put("/api/beats/99999/like", json=payload).status_code == 404
+    assert god.put(route, json=payload | {"visitorId": "invalid"}).status_code == 422
+    assert god.put(route, json=payload | {"liked": "true"}).status_code == 422
+    assert god.put(route, json=payload | {"count": 9999}).status_code == 422
+    assert god.put(route, json=payload).status_code == 200
+    assert god.delete(f"/api/beats/{catalog['track']}").status_code == 204
+    with SessionLocal() as db:
+        assert db.scalar(select(TrackLike)) is None
+
+
 def test_login_cookie_password_hash_and_logout(god):
     assert god.get("/api/auth/me").json()["role"] == "god"
     with SessionLocal() as db:

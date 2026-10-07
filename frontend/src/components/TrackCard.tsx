@@ -4,6 +4,7 @@ import type { Track, Album } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
 import Artwork from "./Artwork";
 import Waveform from "./Waveform";
+import LikeButton from "./LikeButton";
 export default function TrackCard({
   track,
   queue,
@@ -60,13 +61,16 @@ export default function TrackCard({
           <span className="meta">Аудио недоступно</span>
         )}
       </div>
-      <Link
-        className="track-detail"
-        to={`/beats/${track.id}`}
-        aria-label={`Открыть трек ${track.title}`}
-      >
-        ↗
-      </Link>
+      <div className="track-actions">
+        <LikeButton track={track} />
+        <Link
+          className="track-detail"
+          to={`/beats/${track.id}`}
+          aria-label={`Открыть трек ${track.title}`}
+        >
+          ↗
+        </Link>
+      </div>
     </article>
   );
 }

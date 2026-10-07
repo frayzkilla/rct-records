@@ -507,10 +507,12 @@ p {
   min-width: 0;
 }
 .page-heading h1 {
-  font-family: "MARS", Impact, sans-serif;
-  font-size: clamp(36px, 4vw, 58px);
-  font-weight: 400;
-  letter-spacing: -0.035em;
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(32px, 3.7vw, 54px);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #424242;
+  letter-spacing: -0.065em;
   line-height: 1;
   overflow-wrap: anywhere;
 }
@@ -620,7 +622,7 @@ sup {
   display: grid;
   grid-template-columns:
     24px 46px 66px minmax(160px, 1fr) minmax(180px, 0.8fr)
-    44px;
+    112px;
   align-items: center;
   gap: 18px;
   min-height: 104px;
@@ -724,10 +726,94 @@ sup {
   min-height: 44px;
   font-size: 32px;
 }
+.track-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.track-actions .track-detail {
+  min-width: 36px;
+}
+.like-control {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: transparent;
+}
+.like-button:not(:disabled):hover,
+.like-button.is-liked {
+  color: var(--accent);
+}
+.like-button:not(:disabled):hover {
+  border-color: var(--border);
+}
+.like-button[aria-busy="true"] {
+  animation: like-pulse 800ms ease-in-out infinite alternate;
+}
+.like-count {
+  font: 11px "Courier New", monospace;
+}
+.like-error {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  width: min(220px, 65vw);
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--ink);
+  font: 12px/1.5 Arial, sans-serif;
+  z-index: 5;
+}
+.entity-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.entity-actions .like-button {
+  border-color: var(--border);
+  min-height: 50px;
+  min-width: 64px;
+}
+@keyframes like-pulse {
+  to { opacity: 0.5; }
+}
 .waveform {
   position: relative;
   cursor: pointer;
   min-width: 0;
+}
+.waveform[data-loading="true"] .wave-canvas {
+  opacity: 0;
+}
+.wave-skeleton {
+  position: absolute;
+  inset: 0;
+  color: #77736d;
+  pointer-events: none;
+  animation: wave-pulse 1200ms ease-in-out infinite alternate;
+}
+.wave-skeleton svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@keyframes wave-pulse {
+  from { opacity: 0.3; transform: scaleY(0.85); }
+  to { opacity: 0.8; transform: scaleY(1); }
 }
 .wave-status {
   position: absolute;
@@ -1059,6 +1145,17 @@ sup {
 }
 .player-titles {
   min-width: 0;
+  flex: 1;
+}
+.player-track > .like-control {
+  margin-left: auto;
+}
+.player-track .like-error {
+  position: fixed;
+  left: 16px;
+  right: auto;
+  bottom: calc(var(--player-height) + 12px);
+  width: min(320px, calc(100vw - 32px));
 }
 .player-titles > a,
 .player-titles > span {
@@ -1203,7 +1300,7 @@ sup {
     gap: 12px;
     grid-template-columns:
       22px 46px 60px minmax(150px, 1fr) minmax(120px, 0.7fr)
-      36px;
+      112px;
   }
   .track-art {
     width: 60px;
@@ -1214,6 +1311,9 @@ sup {
     padding: 10px 16px;
   }
   .player-volume {
+    display: none;
+  }
+  .player-track .like-count {
     display: none;
   }
   .entity-hero {
@@ -1348,7 +1448,7 @@ sup {
     margin-left: 0;
   }
   .track-row {
-    grid-template-columns: 44px 52px minmax(0, 1fr) 32px;
+    grid-template-columns: 44px 52px minmax(0, 1fr) 44px;
     gap: 10px;
     padding: 14px 6px;
   }
@@ -1372,9 +1472,15 @@ sup {
   .track-wave {
     grid-column: 2 / 4;
   }
-  .track-detail {
+  .track-actions {
     grid-column: 4;
     grid-row: 1 / 3;
+    flex-direction: column;
+    gap: 0;
+  }
+  .track-actions .like-button {
+    flex-direction: column;
+    gap: 2px;
   }
   .section-heading {
     gap: 12px;
@@ -1838,11 +1944,12 @@ sup {
   padding: 4px 6px 6px 0;
 }
 .about-origin {
+  align-self: start;
   grid-column: span 7;
   background: var(--ink);
   color: #101010;
   border: 2px solid var(--ink);
-  padding: 20px 24px;
+  padding: 14px 20px;
   box-shadow: 6px 6px 0 var(--accent);
   display: flex;
   flex-direction: column;
@@ -1863,18 +1970,18 @@ sup {
 }
 .about-origin-type {
   position: relative;
-  padding: 40px 0;
+  padding: 28px 0 12px;
   isolation: isolate;
 }
 .about-origin-type > .display,
 .about-origin-echo {
-  font: 400 clamp(66px, 8.2vw, 126px)/0.85 "MARS", Impact, sans-serif;
+  font: 400 clamp(60px, 6.4vw, 96px)/0.85 "MARS", Impact, sans-serif;
   letter-spacing: -0.04em;
 }
 .about-origin-echo {
   position: absolute;
-  top: 28px;
-  left: 12px;
+  top: 18px;
+  left: 10px;
   color: transparent;
   -webkit-text-stroke: 1px #99958f;
   z-index: -1;
@@ -1883,19 +1990,24 @@ sup {
   position: absolute;
   right: -5px;
   top: 20px;
-  width: 28%;
-  height: 80px;
+  width: 18%;
+  height: 64px;
   transform: rotate(12deg);
   filter: invert(1);
   mix-blend-mode: multiply;
 }
 .about-origin-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
-  border-top: 1px solid #101010;
-  padding-top: 16px;
+  gap: 12px;
+  margin-top: -82px;
+  position: relative;
 }
 .about-origin-bottom > span:first-child {
-  font: 900 clamp(34px, 4vw, 58px)/0.95 "Arial Black", Arial, sans-serif;
+  grid-column: 2;
+  text-align: right;
+  font: 900 clamp(30px, 3.6vw, 52px)/0.85 "Arial Black", Arial, sans-serif;
   letter-spacing: -0.06em;
 }
 .about-origin-bottom em {
@@ -1904,7 +2016,10 @@ sup {
   color: #b52e08;
 }
 .about-origin-bottom .meta {
-  text-align: right;
+  grid-column: 1 / -1;
+  border-top: 1px solid #101010;
+  padding-top: 10px;
+  text-align: left;
   font-size: 10px;
 }
 .about-manifesto {
@@ -1922,7 +2037,10 @@ sup {
   margin: 22px 0;
 }
 .about-manifesto h2 em {
-  font: italic 400 1.06em Georgia, serif;
+  display: block;
+  font: italic 400 0.65em/1.2 Georgia, serif;
+  letter-spacing: -0.025em;
+  margin-top: 8px;
   color: var(--accent);
 }
 .about-manifesto p,
@@ -2048,7 +2166,7 @@ sup {
   }
   .about-origin-type > .display,
   .about-origin-echo {
-    font-size: 8.2vw;
+    font-size: 7.2vw;
   }
   .about-origin {
     padding: 16px;
@@ -2110,21 +2228,24 @@ sup {
   }
   .about-origin-type > .display,
   .about-origin-echo {
-    font-size: clamp(60px, 15.8vw, 110px);
+    font-size: clamp(48px, 13vw, 82px);
   }
   .about-origin-type {
-    padding: 32px 0;
+    padding: 28px 0 22px;
   }
   .about-origin-echo {
-    top: 22px;
+    top: 18px;
     left: 8px;
   }
   .about-origin-type .crown {
-    top: 10px;
-    height: 56px;
+    top: 8px;
+    height: 44px;
   }
   .about-origin-bottom > span:first-child {
-    font-size: 42px;
+    font-size: 30px;
+  }
+  .about-origin-bottom {
+    margin-top: -54px;
   }
   .about-origin-bottom .meta {
     font-size: 8px;

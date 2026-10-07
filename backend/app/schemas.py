@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Annotated
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
@@ -44,3 +45,8 @@ class TrackInput(Input):
     title: Name
     artistId: int = Field(gt=0)
     albumId: int | None = Field(default=None, gt=0)
+
+
+class TrackLikeInput(Input):
+    visitorId: UUID
+    liked: bool = Field(strict=True)

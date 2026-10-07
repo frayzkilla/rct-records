@@ -123,6 +123,87 @@ test.beforeEach(async ({ page }) => {
   await mockCatalog(page);
 });
 
+test("waveforms show pulsing skeletons until the real audio is decoded", async ({ page }, testInfo) => {
+  let release = () => {};
+  const ready = new Promise<void>((resolve) => { release = resolve; });
+  await page.route("**/test/*.wav", async (route) => {
+    await ready;
+    await route.fulfill({ contentType: "audio/wav", body: audioFixture() });
+  });
+  await page.goto("/beats", { waitUntil: "domcontentloaded" });
+  const skeleton = page.locator(".track-row .wave-skeleton").first();
+  await expect(skeleton).toBeVisible();
+  await expect(skeleton).toHaveCSS("animation-name", "wave-pulse");
+  await expect(page.getByText("Загрузка волны…", { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath("wave-skeleton.png") });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(skeleton).toHaveCSS("animation-name", "none");
+  release();
+  await expect(page.locator(".track-row .waveform").first()).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator(".player-wave .waveform")).toHaveAttribute("aria-busy", "false");
+  await expect(page.locator(".wave-skeleton")).toHaveCount(0);
+});
+
+test("anonymous likes synchronize across the list, player and track page and survive reload", async ({ page }) => {
+  await page.addInitScript(() => { Math.random = () => 0; });
+  const voters = new Set<string>();
+  let requests = 0;
+  let release = () => {};
+  const ready = new Promise<void>((resolve) => { release = resolve; });
+  await page.route("**/api/beats", (route) => route.fulfill({
+    json: tracks.map((track) => ({ ...track, likes: track.id === 1 ? voters.size : 0 })),
+  }));
+  await page.route("**/api/beats/1/like", async (route) => {
+    requests++;
+    const body = route.request().postDataJSON();
+    expect(route.request().method()).toBe("PUT");
+    expect(body.visitorId).toMatch(/^[\da-f-]{36}$/);
+    await ready;
+    if (body.liked) voters.add(body.visitorId);
+    else voters.delete(body.visitorId);
+    await route.fulfill({ json: { likes: voters.size, liked: body.liked } });
+  });
+  await page.goto("/beats");
+  const listButton = page.locator(".track-row").first().locator(".like-button");
+  const playerButton = page.locator(".player-track .like-button");
+  await listButton.click();
+  await expect(listButton).toBeDisabled();
+  await expect(playerButton).toBeDisabled();
+  release();
+  await expect(listButton).toHaveAttribute("aria-pressed", "true");
+  await expect(playerButton).toHaveAttribute("aria-pressed", "true");
+  await expect(listButton.locator(".like-count")).toHaveText("1");
+  expect(requests).toBe(1);
+  await page.locator(".track-title").first().click();
+  await expect(page.locator(".entity-actions .like-button")).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await expect(page.locator(".entity-actions .like-button")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".entity-actions .like-count")).toHaveText("1");
+  await playerButton.click();
+  await expect(page.locator(".entity-actions .like-button")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".entity-actions .like-count")).toHaveText("0");
+  expect(voters.size).toBe(0);
+  expect(requests).toBe(2);
+});
+
+test("failed likes keep their previous state and can be retried", async ({ page }) => {
+  let failed = true;
+  await page.route("**/api/beats/1/like", (route) => route.fulfill(failed ? {
+    status: 503, json: { detail: "Unavailable" },
+  } : { json: { liked: true, likes: 1 } }));
+  await page.goto("/beats");
+  const button = page.locator(".track-row").first().locator(".like-button");
+  await button.click();
+  await expect(page.locator(".track-row .like-error")).toBeVisible();
+  await expect(button).toHaveAttribute("aria-pressed", "false");
+  await expect(button.locator(".like-count")).toHaveText("0");
+  failed = false;
+  await button.click();
+  await expect(button).toHaveAttribute("aria-pressed", "true");
+  await expect(button.locator(".like-count")).toHaveText("1");
+  await expect(page.locator(".like-error")).toHaveCount(0);
+});
+
 for (const [random, title] of [[0, "Simon Said"], [0.99, "Woah"]] as const) {
   test(`initial selection uses random catalog position ${random} without autoplay`, async ({ page }) => {
     await page.addInitScript((value) => { Math.random = () => value; }, random);
@@ -131,7 +212,7 @@ for (const [random, title] of [[0, "Simon Said"], [0.99, "Woah"]] as const) {
     await expect(page.locator(".player-shell > audio")).toHaveJSProperty("paused", true);
     await expect(page.locator('.player-wave input')).toHaveCount(0);
     const waveform = page.locator('.player-wave [role="slider"]');
-    await expect(page.locator(".player-wave .wave-status")).toHaveCount(0);
+    await expect(page.locator(".player-wave .waveform")).toHaveAttribute("aria-busy", "false");
     await waveform.press("ArrowRight");
     await expect.poll(() => page.locator(".player-shell > audio").evaluate(
       (audio: HTMLAudioElement) => audio.currentTime,
@@ -238,7 +319,7 @@ test("track, artist and album links preserve playback and waveform seeking", asy
   await expect(page.locator(".track-row")).toHaveCount(2);
   await page.locator(".track-title").first().click();
   await expect(page).toHaveURL(/\/beats\/1$/);
-  await expect(page.locator(".entity-copy .wave-status")).toHaveCount(0);
+  await expect(page.locator(".entity-copy .waveform")).toHaveAttribute("aria-busy", "false");
   await page.locator(".entity-copy .waveform").press("Home");
   await page.locator(".entity-copy .waveform").press("ArrowRight");
   await expect

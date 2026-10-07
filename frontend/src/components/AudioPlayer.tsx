@@ -14,6 +14,7 @@ import { useCatalog, formatTime } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
 import Artwork from "./Artwork";
 import Waveform from "./Waveform";
+import LikeButton from "./LikeButton";
 
 export default function AudioPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -365,6 +366,7 @@ export default function AudioPlayer() {
                   </span>
                 )}
               </div>
+              <LikeButton track={current} />
             </>
           ) : (
             <div className="player-titles">
