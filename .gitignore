@@ -4,3 +4,8 @@
 **/.pytest_cache/
 /backend/data/
 .env
+.env.example
+DESIGN_SYSTEM.md
+/deployment/
+/backend/README.md
+/frontend/README.md
