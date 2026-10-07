@@ -18,7 +18,7 @@ export default function ArtistsPage() {
         error={catalog.error}
         retry={catalog.refetch}
       >
-        <div className="crew-intro">
+        {/* <div className="crew-intro">
           <span className="meta">SIBERIA / SOUND</span>
           <p>
             НАШИ АРТИСТЫ
@@ -28,7 +28,7 @@ export default function ArtistsPage() {
           <span className="crew-mark" aria-hidden="true">
             ↙
           </span>
-        </div>
+        </div> */}
         <div className="crew-grid">
           {artists.map((artist, index) => (
             <ArtistCard key={artist.id} artist={artist} index={index} />

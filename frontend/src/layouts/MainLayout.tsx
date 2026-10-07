@@ -27,7 +27,7 @@ export default function MainLayout() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
   return (
-    <div className="site-shell">
+    <div className={`site-shell ${pathname === "/admin" ? "admin-site-shell" : ""}`}>
       <a href="#main-content" className="skip-link">
         К содержимому
       </a>

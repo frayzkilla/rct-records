@@ -93,6 +93,9 @@ p {
   font-family: "MARS", Impact, sans-serif;
   font-weight: 400;
 }
+em {
+  font-style: normal;
+}
 .meta,
 .eyebrow {
   font-family: "Courier New", monospace;
@@ -1236,15 +1239,452 @@ sup {
   color: var(--accent);
 }
 .admin-shell {
-  min-height: 65vh;
+  min-width: 0;
 }
-.admin-shell > div {
-  background: var(--background);
-  padding-top: 48px;
-  padding-bottom: 48px;
+.site-shell.admin-site-shell {
+  padding-bottom: var(--player-height);
 }
-.admin-shell [class*="rounded"] {
+.admin-login {
+  min-height: calc(100svh - var(--header-height) - var(--player-height));
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login-panel {
+  width: min(100%, 920px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--accent);
+  background: var(--surface);
+}
+.login-poster {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  background: #242424;
+  border-right: var(--line);
+  overflow: hidden;
+}
+.login-poster > .meta {
+  color: var(--muted);
+  font-size: 10px;
+}
+.login-poster-type {
+  position: relative;
+  padding: 24px 0;
+  font: 400 clamp(64px, 7vw, 96px)/0.85 "MARS", Impact, sans-serif;
+  letter-spacing: -0.04em;
+  isolation: isolate;
+}
+.login-poster-echo {
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent);
+  z-index: -1;
+}
+.login-poster-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: var(--line);
+  padding-top: 16px;
+}
+.login-poster-bottom svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.login-content {
+  min-width: 0;
+  padding: 32px;
+}
+.login-heading h1,
+.admin-topbar h1 {
+  font: 900 clamp(32px, 4vw, 52px)/1 "Arial Black", Arial, sans-serif;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+  margin: 12px 0;
+}
+.login-heading p {
+  font-size: 14px;
+  color: var(--muted);
+}
+.login-form {
+  margin-top: 24px;
+}
+.admin-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.admin-field > span {
+  font: 12px/1.5 "Courier New", monospace;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.admin-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid var(--border);
   border-radius: 0;
+  background: var(--background);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.admin-input:focus {
+  border-color: var(--accent);
+}
+textarea.admin-input {
+  resize: vertical;
+  min-height: 120px;
+}
+.admin-input[type="file"] {
+  padding: 8px;
+  font-size: 12px;
+  overflow: hidden;
+}
+.admin-input::file-selector-button {
+  font: 700 12px Arial, sans-serif;
+  padding: 9px 12px;
+  margin-right: 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--background);
+  cursor: pointer;
+}
+.admin-button {
+  min-height: 44px;
+  padding: 11px 16px;
+}
+.login-form .admin-button {
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.admin-message {
+  padding: 12px 16px;
+  margin: 16px 0;
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.admin-message-error {
+  border-left: 4px solid var(--accent);
+}
+.admin-loading {
+  font: 12px/1.6 "Courier New", monospace;
+  color: var(--muted);
+  padding: 24px 0;
+}
+.admin-workspace {
+  padding-top: 28px;
+}
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-bottom: 20px;
+  border-bottom: var(--line);
+}
+.admin-topbar > div {
+  min-width: 0;
+}
+.admin-account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.admin-account > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.admin-account strong {
+  font-size: 14px;
+}
+.admin-account span {
+  font: 11px/1.5 "Courier New", monospace;
+  color: var(--muted);
+}
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px 4px 24px 0;
+  border-bottom: var(--line);
+}
+.admin-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+}
+.admin-tabs button span {
+  color: var(--muted);
+  font: 11px "Courier New", monospace;
+}
+.admin-tabs button[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 var(--accent);
+}
+.admin-tabs button:hover {
+  color: var(--accent);
+}
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 0;
+}
+.admin-toolbar > div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+.admin-toolbar h2 {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+.admin-toolbar .meta {
+  color: var(--muted);
+}
+.admin-content {
+  display: grid;
+  gap: 24px;
+  align-items: start;
+}
+.admin-content.has-editor {
+  grid-template-columns: minmax(300px, 440px) minmax(0, 1fr);
+}
+.admin-editor {
+  min-width: 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  box-shadow: 4px 4px 0 #484848;
+  scroll-margin-top: 120px;
+}
+.admin-editor-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.admin-editor-heading h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  margin-top: 8px;
+}
+.admin-editor-heading .meta {
+  font-size: 10px;
+}
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: var(--line);
+  padding-top: 20px;
+}
+.admin-preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border: var(--line);
+}
+.admin-audio {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-records {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.admin-record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 16px 20px;
+  border: var(--line);
+  background: var(--surface);
+  min-width: 0;
+}
+.admin-record.is-editing {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.admin-record-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.admin-record-copy > div {
+  min-width: 0;
+}
+.admin-record-id {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: 10px;
+}
+.admin-record h3 {
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.admin-record p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.admin-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+}
+.admin-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.admin-action-delete {
+  color: var(--muted);
+}
+@media (max-width: 1000px) {
+  .admin-content.has-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px), (max-height: 650px) {
+  .login-panel {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 400px;
+  }
+  .login-poster {
+    display: none;
+  }
+  .login-content {
+    padding: 24px;
+  }
+  .admin-login {
+    padding: 16px 20px 20px 16px;
+  }
+  .login-heading h1 {
+    font-size: 36px;
+  }
+  .login-form {
+    margin-top: 20px;
+  }
+  .login-form .admin-fields {
+    gap: 14px;
+  }
+  .admin-tabs button {
+    flex: 1 1 120px;
+  }
+  .admin-editor {
+    padding: 18px;
+  }
+  .admin-record {
+    padding: 14px;
+  }
+}
+@media (max-height: 700px) {
+  .admin-login {
+    padding-top: 12px;
+    padding-bottom: 16px;
+  }
+  .login-content {
+    padding: 12px 18px;
+  }
+  .login-heading > .meta {
+    display: none;
+  }
+  .login-heading h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+  }
+  .login-form {
+    margin-top: 12px;
+  }
+  .login-form .admin-fields {
+    gap: 10px;
+  }
+  .login-form .admin-field {
+    gap: 4px;
+  }
+  .login-form .admin-field > span {
+    font-size: 11px;
+  }
+  .login-form .admin-input {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+  .login-form .admin-button {
+    padding: 9px 12px;
+  }
+  .login-content .admin-message {
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 12px;
+  }
 }
 .admin-shell button:focus-visible,
 .admin-shell input:focus-visible {
@@ -1795,8 +2235,10 @@ sup {
   line-height: 1.05;
 }
 .crew-intro em {
-  font-family: Georgia, serif;
-  font-weight: 400;
+  font-family: "Courier New", monospace;
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: -0.07em;
   color: var(--accent);
 }
 .crew-mark {
@@ -1925,8 +2367,10 @@ sup {
   margin-top: 16px;
 }
 .crew-card-3 .crew-copy h2 {
-  font-family: Georgia, serif;
-  font-style: italic;
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
 }
 .crew-card-4 {
   grid-column: 1 / -1;
@@ -2011,8 +2455,11 @@ sup {
   letter-spacing: -0.06em;
 }
 .about-origin-bottom em {
-  font-family: Georgia, serif;
-  font-weight: 400;
+  font-family: "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: 0.8em;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
   color: #b52e08;
 }
 .about-origin-bottom .meta {
@@ -2038,10 +2485,12 @@ sup {
 }
 .about-manifesto h2 em {
   display: block;
-  font: italic 400 0.65em/1.2 Georgia, serif;
+  font: 700 0.55em/1.3 "Courier New", monospace;
   letter-spacing: -0.025em;
   margin-top: 8px;
   color: var(--accent);
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
 }
 .about-manifesto p,
 .about-archive p {
@@ -2062,7 +2511,8 @@ sup {
   transform: rotate(-2deg);
 }
 .about-note > span:nth-child(2) {
-  font: italic 26px Georgia, serif;
+  font: 700 22px/1.15 "Courier New", monospace;
+  letter-spacing: -0.05em;
 }
 .about-note > span:last-child {
   position: absolute;
@@ -2084,8 +2534,9 @@ sup {
   letter-spacing: -0.07em;
 }
 .about-statement > span:nth-child(2) {
-  font: italic 400 1.1em/0.9 Georgia, serif;
-  color: var(--accent);
+  font: 900 1em/1 "Arial Black", Arial, sans-serif;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent);
 }
 .about-statement > span:last-child {
   font-family: "MARS", Impact, sans-serif;
@@ -2107,8 +2558,13 @@ sup {
   -webkit-text-stroke: 1px var(--ink);
 }
 .about-archive h2 em {
-  font-family: Georgia, serif;
-  font-weight: 400;
+  display: inline-block;
+  font: 700 0.82em/1.15 "Courier New", monospace;
+  padding: 3px 6px;
+  margin-top: 5px;
+  background: var(--accent);
+  color: #101010;
+  transform: rotate(-2deg);
 }
 .about-archive .button {
   margin-top: 8px;

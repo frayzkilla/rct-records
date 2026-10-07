@@ -45,15 +45,15 @@ export default function AboutPage() {
             <br />
             <em>HOPE YOU FIND SOMETHIN’ YOU LIKE.</em>
           </h2>
-          <p>Представляем независимое объединение артистов в разныx жанрах.</p>
           <p>
-            Здесь вы можете послушать биты, рэп и миксы, которые мы сделали.
+            Представляем независимое объединение артистов в разныx жанрах, здесь
+            вы можете послушать биты, рэп и миксы, которые мы сделали.
           </p>
-          <div className="about-note">
+          {/* <div className="about-note">
             <span className="meta">NO TALKIN’.</span>
             <span>JUST PRESS PLAY. LISTEN UP.</span>
             <span aria-hidden="true">↙</span>
-          </div>
+          </div> */}
         </div>
         <div className="about-statement" aria-label="Биты, рэп, миксы">
           <span>BEATS.</span>
