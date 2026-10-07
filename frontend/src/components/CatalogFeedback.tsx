@@ -1,3 +1,4 @@
+import DirectionalArrow from "./DirectionalArrow";
 import type { ReactNode } from "react";
 export default function CatalogFeedback({
   loading,
@@ -25,7 +26,7 @@ export default function CatalogFeedback({
         <h2>Каталог пока недоступен</h2>
         <p>{error.message}</p>
         <button className="button" onClick={retry}>
-          Повторить запрос ↗
+          Повторить запрос <DirectionalArrow />
         </button>
       </div>
     );

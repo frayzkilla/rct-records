@@ -1,4 +1,5 @@
-﻿import { Link } from "react-router-dom";
+import DirectionalArrow from "../components/DirectionalArrow";
+import { Link } from "react-router-dom";
 import Crown from "../components/Crown";
 import PageHeading from "../components/PageHeading";
 
@@ -34,7 +35,7 @@ export default function AboutPage() {
             <span className="meta">
               BEATS / BARS / MIXES
               <br />
-              LISTEN ↗
+              LISTEN <DirectionalArrow />
             </span>
           </div>
         </div>
@@ -73,7 +74,7 @@ export default function AboutPage() {
             Все бесплатно и в открытом доступе. Слушай, делись - будем рады.
           </p>
           <Link className="button button-outline" to="/beats">
-            Послушать ↗
+            Послушать <DirectionalArrow />
           </Link>
         </div>
         <Link className="about-crew-link" to="/artists">
@@ -84,7 +85,7 @@ export default function AboutPage() {
             THE CREW
           </span>
           <span className="about-crew-arrow" aria-hidden="true">
-            ↗
+            <DirectionalArrow />
           </span>
           <span className="meta">Те, кто все это делал</span>
         </Link>

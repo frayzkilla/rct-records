@@ -501,6 +501,28 @@ for (const width of [320, 390, 768, 1440]) {
         ),
         route,
       ).toBe(true);
+      if (width <= 760 && route === "/beats") {
+        const shell = await page.locator(".player-shell").boundingBox();
+        const controls = await page.locator(".player-controls").boundingBox();
+        const titles = await page.locator(".player-titles").boundingBox();
+        const like = await page.locator(".player-track .like-button").boundingBox();
+        const queue = await page.locator(".queue-toggle").boundingBox();
+        const progress = await page.locator(".player-progress").boundingBox();
+        expect(controls).not.toBeNull();
+        expect(titles).not.toBeNull();
+        expect(like).not.toBeNull();
+        expect(queue).not.toBeNull();
+        expect(progress).not.toBeNull();
+        expect(Math.abs(controls!.x + controls!.width / 2 - (shell!.x + shell!.width / 2))).toBeLessThanOrEqual(1);
+        expect(titles!.x + titles!.width).toBeLessThanOrEqual(controls!.x);
+        expect(queue!.x).toBeGreaterThanOrEqual(controls!.x + controls!.width);
+        expect(like!.x).toBeGreaterThanOrEqual(queue!.x + queue!.width);
+        expect(progress!.y).toBeGreaterThanOrEqual(controls!.y + controls!.height);
+        await page.locator(".queue-toggle").click();
+        await expect(page.locator(".queue-panel")).toBeVisible();
+        await page.locator(".queue-close").click();
+        await expect(page.locator(".queue-panel")).toHaveCount(0);
+      }
       if ([390, 1440].includes(width) && ["/artists", "/about", "/beats"].includes(route)) {
         await page.evaluate(() => document.fonts.ready);
         await page.screenshot({ path: testInfo.outputPath(`${route.slice(1)}-${width}.png`), fullPage: true });

@@ -1,3 +1,4 @@
+import DirectionalArrow from "./DirectionalArrow";
 import { Link } from "react-router-dom";
 import type { Album } from "../lib/catalog";
 import Artwork from "./Artwork";
@@ -11,7 +12,7 @@ export default function AlbumCard({ album }: { album: Album }) {
       <div className="card-body">
         <Link to={`/albums/${album.id}`} className="card-title">
           {album.title}
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true"><DirectionalArrow /></span>
         </Link>
         <Link className="artist-link" to={`/artists/${album.artistId}`}>
           {album.artist}

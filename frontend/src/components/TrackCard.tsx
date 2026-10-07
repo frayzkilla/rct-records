@@ -1,3 +1,4 @@
+import DirectionalArrow from "./DirectionalArrow";
 import { Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Track, Album } from "../lib/catalog";
@@ -68,7 +69,7 @@ export default function TrackCard({
           to={`/beats/${track.id}`}
           aria-label={`Открыть трек ${track.title}`}
         >
-          ↗
+          <DirectionalArrow />
         </Link>
       </div>
     </article>

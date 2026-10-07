@@ -1,4 +1,5 @@
 import crowns from "../assets/crowns.svg";
+import mobileCrowns from "../assets/crowns-mobile.svg";
 import { useId } from "react";
 
 export default function Crown({
@@ -26,7 +27,15 @@ export default function Crown({
         </clipPath>
       </defs>
       <image
+        className="crown-desktop-image"
         href={crowns}
+        width="5000"
+        height="2000"
+        clipPath={`url(#${clipId})`}
+      />
+      <image
+        className="crown-mobile-image"
+        href={mobileCrowns}
         width="5000"
         height="2000"
         clipPath={`url(#${clipId})`}

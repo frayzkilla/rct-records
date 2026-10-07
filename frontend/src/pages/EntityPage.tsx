@@ -1,3 +1,4 @@
+import DirectionalArrow from "../components/DirectionalArrow";
 import { Link, useParams } from "react-router-dom";
 import { Play, ArrowUpRight } from "lucide-react";
 import { useCatalog } from "../lib/catalog";
@@ -181,7 +182,7 @@ export default function EntityPage({
                   </h2>
                 </div>
                 {release && kind === "track" && (
-                  <Link to={`/albums/${release.id}`}>Весь альбом ↗</Link>
+                  <Link to={`/albums/${release.id}`}>Весь альбом <DirectionalArrow /></Link>
                 )}
               </div>
               <div className="track-list">
@@ -202,7 +203,7 @@ export default function EntityPage({
                   {kind === "track"
                     ? "Других треков пока нет. Остальные записи — в каталоге."
                     : "Здесь пока нет треков."}
-                  <Link to="/beats">Все треки ↗</Link>
+                  <Link to="/beats">Все треки <DirectionalArrow /></Link>
                 </div>
               )}
             </section>
@@ -224,7 +225,7 @@ export default function EntityPage({
             <h1>Запись не найдена</h1>
             <p>Возможно, релиз удалён или ссылка изменилась.</p>
             <Link className="button" to={collection}>
-              Вернуться в каталог ↗
+              Вернуться в каталог <DirectionalArrow />
             </Link>
           </div>
         )}

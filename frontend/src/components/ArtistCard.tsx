@@ -1,3 +1,4 @@
+import DirectionalArrow from "./DirectionalArrow";
 import { Link } from "react-router-dom";
 import type { Artist } from "../lib/catalog";
 import Artwork from "./Artwork";
@@ -22,7 +23,7 @@ export default function ArtistCard({
         <h2><Link to={`/artists/${artist.id}`}>{artist.name}</Link></h2>
         <p>{artist.bio || "Участник Raw Crownz. Треки и релизы — в профиле."}</p>
         <Link className="crew-profile" to={`/artists/${artist.id}`}>
-          <span className="meta">Треки и релизы</span><span aria-hidden="true">↗</span>
+          <span className="meta">Треки и релизы</span><span aria-hidden="true"><DirectionalArrow /></span>
         </Link>
       </div>
     </article>
