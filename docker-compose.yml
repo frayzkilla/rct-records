@@ -1,8 +1,10 @@
 services:
   frontend:
     build: ./frontend
+    environment:
+      TRUSTED_PROXY_CIDR: ${TRUSTED_PROXY_CIDR:-172.16.0.0/12}
     ports:
-      - "3001:80"
+      - "127.0.0.1:3001:80"
     volumes:
       - ./storage:/storage:ro
     depends_on:
@@ -12,17 +14,15 @@ services:
 
   backend:
     build: ./backend
-    ports:
-      - "3002:3000"
     environment:
       DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-yarik}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       DB_DATABASE: ${DB_DATABASE:-rawcrownz}
       GOD_ADMIN_PASSWORD: ${GOD_ADMIN_PASSWORD:?Set GOD_ADMIN_PASSWORD in .env}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3001}
+      COOKIE_SECURE: "true"
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://rawcrownz.ru}
       MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-104857600}
     volumes:
       - ./storage:/app/storage:rw
@@ -38,7 +38,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-yarik}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       POSTGRES_DB: ${DB_DATABASE:-rawcrownz}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]

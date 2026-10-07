@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 
 from . import auth, catalog
+from .body_limit import BodyLimitMiddleware
 from .config import ALLOWED_ORIGINS, GOD_PASSWORD, STORAGE
 from .database import Base, SessionLocal, engine
 from .models import Admin
@@ -28,6 +29,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Raw Crownz Records API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_credentials=True, allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Content-Type"])
+app.add_middleware(BodyLimitMiddleware)
 
 
 @app.middleware("http")
