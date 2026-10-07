@@ -22,11 +22,11 @@ export default function BeatsPage() {
       <PageHeading
         kicker="01 / THE SOUND"
         title="Tracks"
-        description="Биты, рэп и диджейские миксы. Выбирай трек или слушай подряд."
+        description=""
         count={catalog.data?.tracks.length}
       />
       <div className="catalog-toolbar">
-        <CatalogSearch placeholder="Трек, артист или альбом" />
+        <CatalogSearch placeholder="Поиск" />
         <button
           className="button"
           disabled={!tracks.some((track) => track.audioUrl)}
@@ -45,7 +45,7 @@ export default function BeatsPage() {
       >
         <div className="list-caption">
           <span>ТРЕК / АРТИСТ</span>
-          <span>{tracks.length} В КАТАЛОГЕ</span>
+          <span>{tracks.length} ШТ.</span>
         </div>
         <div className="track-list">
           {tracks.map((track, index) => (

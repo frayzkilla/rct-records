@@ -10,7 +10,7 @@ export default function ArtistsPage() {
       <PageHeading
         kicker="03 / THE PEOPLE"
         title="The crew."
-        description="Кто делает биты, читает рэп и записывает миксы в Raw Crownz."
+        description=""
         count={catalog.data?.artists.length}
       />
       <CatalogFeedback
@@ -19,9 +19,15 @@ export default function ArtistsPage() {
         retry={catalog.refetch}
       >
         <div className="crew-intro">
-          <span className="meta">SIBERIA / INDEPENDENT SOUND</span>
-          <p>Разные люди.<br /><em>Общий звук.</em></p>
-          <span className="crew-mark" aria-hidden="true">↙</span>
+          <span className="meta">SIBERIA / SOUND</span>
+          <p>
+            НАШИ АРТИСТЫ
+            <br />
+            <em>И немного о том, кто они</em>
+          </p>
+          <span className="crew-mark" aria-hidden="true">
+            ↙
+          </span>
         </div>
         <div className="crew-grid">
           {artists.map((artist, index) => (
@@ -29,9 +35,7 @@ export default function ArtistsPage() {
           ))}
         </div>
         {!artists.length && (
-          <div className="empty-state">
-            Скоро здесь появятся наши артисты.
-          </div>
+          <div className="empty-state">Скоро здесь появятся наши артисты.</div>
         )}
       </CatalogFeedback>
     </div>

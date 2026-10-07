@@ -19,11 +19,11 @@ export default function AlbumsPage() {
       <PageHeading
         kicker="02 / THE RELEASES"
         title="Albums"
-        description="Альбомы и сборники нашей команды. Всё в одном месте."
+        description=""
         count={catalog.data?.albums.length}
       />
       <div className="catalog-toolbar">
-        <CatalogSearch placeholder="Альбом, артист или год" />
+        <CatalogSearch placeholder="Поиск" />
       </div>
       <CatalogFeedback
         loading={catalog.isPending}

@@ -37,11 +37,7 @@ export default function Home() {
                 <br />
                 0% FILTER
               </span>
-              <span className="hero-art-label">
-                ALL GAS.
-                <br />
-                NO BRAKES.
-              </span>
+              <span className="hero-art-label">ALL GAS.</span>
               <div className="graphic-bars" aria-hidden="true">
                 {Array.from({ length: 40 }, (_, index) => (
                   <i
@@ -59,7 +55,8 @@ export default function Home() {
               {Array.from({ length: 6 }, (_, index) => (
                 <span key={index}>
                   STRAIGHT OUTTA SIBERIA <b>✳</b> RAW CROWNZ RECORDS <b>✳</b>{" "}
-                  BEATS / BARS / MIXES <b>✳</b> LOWKEY LOUD <b>✳</b>
+                  BEATS / BARS / MIXES <b>✳</b> LOWKEY LOUD <b>✳</b> -35°C{" "}
+                  <b>✳</b>
                 </span>
               ))}
             </div>
