@@ -123,6 +123,83 @@ test.beforeEach(async ({ page }) => {
   await mockCatalog(page);
 });
 
+for (const [random, title] of [[0, "Simon Said"], [0.99, "Woah"]] as const) {
+  test(`initial selection uses random catalog position ${random} without autoplay`, async ({ page }) => {
+    await page.addInitScript((value) => { Math.random = () => value; }, random);
+    await page.goto("/about");
+    await expect(page.locator(".player-titles > a")).toHaveText(title);
+    await expect(page.locator(".player-shell > audio")).toHaveJSProperty("paused", true);
+    await expect(page.locator('.player-wave input')).toHaveCount(0);
+    const waveform = page.locator('.player-wave [role="slider"]');
+    await expect(page.locator(".player-wave .wave-status")).toHaveCount(0);
+    await waveform.press("ArrowRight");
+    await expect.poll(() => page.locator(".player-shell > audio").evaluate(
+      (audio: HTMLAudioElement) => audio.currentTime,
+    )).toBeGreaterThan(4);
+    await expect(page.locator(".player-shell > audio")).toHaveJSProperty("paused", true);
+    await page.getByRole("button", { name: "Очередь воспроизведения" }).click();
+    await expect(page.locator(".queue-panel ol li")).toHaveCount(3);
+    await expect(page.locator(".queue-panel h2, .queue-panel > p")).toHaveCount(0);
+    await page.getByRole("button", { name: "Закрыть очередь" }).click();
+    await expect(page.getByRole("button", { name: "Очередь воспроизведения" })).toBeFocused();
+  });
+}
+
+test("album cover overrides track artwork and singles use layered MARS titles", async ({ page }) => {
+  await page.route("**/api/beats", (route) => route.fulfill({
+    json: tracks.map((track) => track.id === 1 ? { ...track, coverUrl: "/test/own.svg" } : track),
+  }));
+  await page.goto("/beats");
+  await expect(page.locator(".track-row").first().locator(".track-art img")).toHaveAttribute("src", albums[0].coverUrl);
+  const fallback = page.locator(".track-row").last().locator(".artwork-fallback");
+  await expect(fallback).toHaveAttribute("aria-label", "Woah");
+  await expect(fallback.locator(".artwork-type > span")).toHaveText(["Woah", "Woah", "Woah"]);
+  await expect(fallback.locator(".artwork-type")).toHaveCSS("font-family", 'MARS, Impact, sans-serif');
+  await page.locator(".track-title").first().click();
+  await expect(page.locator("img.entity-art")).toHaveAttribute("src", albums[0].coverUrl);
+});
+
+test("artists show full biographies without search and active navigation stays transparent", async ({ page }) => {
+  await page.goto("/artists?q=absent");
+  await expect(page.getByRole("searchbox")).toHaveCount(0);
+  await expect(page.locator(".crew-card")).toHaveCount(artists.length);
+  await expect(page.locator(".crew-copy p").first()).toHaveText(artists[0].bio);
+  await expect(page.locator('.desktop-nav a.active')).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const height = await page.locator(".page-heading").evaluate((node) => node.getBoundingClientRect().height);
+  expect(height).toBeLessThan(130);
+});
+
+test("five artists with long biographies fit without overlapping posters", async ({ page }, testInfo) => {
+  const crew = [...artists, ...Array.from({ length: 3 }, (_, index) => ({
+    id: index + 3,
+    name: ["Northern Sound", "Raw Voice", "Siberian Selector"][index],
+    bio: "Делаем биты, читаем рэп и записываем миксы. ".repeat(index === 0 ? 12 : 3),
+    avatarUrl: index === 1 ? "/test/artist.svg" : "",
+  }))];
+  await page.route("**/api/artists", (route) => route.fulfill({ json: crew }));
+  for (const width of [320, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/artists");
+    await expect(page.locator(".crew-card")).toHaveCount(5);
+    await expect(page.locator(".crew-copy p").nth(2)).toHaveText(crew[2].bio);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const bounds = await page.locator(".crew-card").evaluateAll((nodes) => nodes.map((node) => {
+      const { left, right, top, bottom } = node.getBoundingClientRect();
+      return { left, right, top, bottom };
+    }));
+    for (let index = 0; index < bounds.length; index++) {
+      for (const other of bounds.slice(index + 1)) {
+        const card = bounds[index];
+        expect(card.right <= other.left || other.right <= card.left || card.bottom <= other.top || other.bottom <= card.top).toBe(true);
+      }
+    }
+    if (width === 1440) {
+      await page.evaluate(() => document.fonts.ready);
+      await page.screenshot({ path: testInfo.outputPath("crew-five-1440.png"), fullPage: true });
+    }
+  }
+});
+
 test("track, artist and album links preserve playback and waveform seeking", async ({
   page,
 }) => {
@@ -323,7 +400,7 @@ test("audio failures remain recoverable", async ({ page }) => {
 });
 
 for (const width of [320, 390, 768, 1440]) {
-  test(`responsive navigation and layouts at ${width}px`, async ({ page }) => {
+  test(`responsive navigation and layouts at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 900 });
     for (const route of [
       "/",
@@ -343,6 +420,10 @@ for (const width of [320, 390, 768, 1440]) {
         ),
         route,
       ).toBe(true);
+      if ([390, 1440].includes(width) && ["/artists", "/about", "/beats"].includes(route)) {
+        await page.evaluate(() => document.fonts.ready);
+        await page.screenshot({ path: testInfo.outputPath(`${route.slice(1)}-${width}.png`), fullPage: true });
+      }
     }
     if (width < 760) {
       await page.getByRole("button", { name: "Открыть меню" }).click();

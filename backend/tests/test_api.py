@@ -110,6 +110,24 @@ def test_validation_and_failed_upload_cleanup(god, catalog, monkeypatch):
     assert god.put(f"/api/beats/{catalog['track']}", json={"audioUrl": "/storage/secret"}).status_code == 422
 
 
+def test_album_artwork_takes_priority_and_single_keeps_own_cover(god, catalog):
+    track_id = catalog["track"]
+    album_id = catalog["album"]
+    own_cover = god.put(
+        f"/api/beats/{track_id}",
+        files={"cover": ("track.png", b"track cover", "image/png")},
+    ).json()["coverUrl"]
+    album_cover = god.put(
+        f"/api/albums/{album_id}",
+        files={"cover": ("album.png", b"album cover", "image/png")},
+    ).json()["coverUrl"]
+    assert album_cover != own_cover
+    assert god.get("/api/beats").json()[0]["coverUrl"] == album_cover
+    assert god.get(f"/api/albums/{album_id}/tracks").json()[0]["coverUrl"] == album_cover
+    assert god.get("/api/admin/catalog").json()["beats"][0]["coverUrl"] == album_cover
+    assert god.put(f"/api/beats/{track_id}", json={"albumId": None}).json()["coverUrl"] == own_cover
+
+
 def test_origin_protection(god):
     assert god.post("/api/artists", json={"name": "CSRF"}, headers={"Origin": "https://attacker.example"}).status_code == 403
     assert god.post("/api/artists", json={"name": "Allowed"}, headers={"Origin": "http://localhost:5173", "Sec-Fetch-Site": "same-origin"}).status_code == 201

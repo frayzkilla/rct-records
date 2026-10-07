@@ -44,10 +44,18 @@ export default function AudioPlayer() {
   );
 
   useEffect(() => {
-    if (catalog.data)
-      usePlayerStore.setState({
-        catalog: catalog.data.tracks.filter((track) => track.audioUrl),
-      });
+    if (!catalog.data) return;
+    const tracks = catalog.data.tracks.filter((track) => track.audioUrl);
+    usePlayerStore.setState((state) => {
+      if (state.current || !tracks.length) return { catalog: tracks };
+      const selected = tracks[Math.floor(Math.random() * tracks.length)];
+      return {
+        catalog: tracks,
+        current: selected,
+        queue: tracks,
+        isPlaying: false,
+      };
+    });
   }, [catalog.data]);
   useEffect(() => {
     const audio = audioRef.current;
@@ -88,8 +96,8 @@ export default function AudioPlayer() {
       title: current.title,
       artist: current.producer,
       album: album?.title ?? "Raw Crownz Records",
-      artwork: current.coverUrl
-        ? [{ src: new URL(current.coverUrl, window.location.href).href }]
+      artwork: (album?.coverUrl || current.coverUrl)
+        ? [{ src: new URL(album?.coverUrl || current.coverUrl, window.location.href).href }]
         : [],
     });
     const handlers: Partial<
@@ -141,7 +149,7 @@ export default function AudioPlayer() {
         }
       }
     };
-  }, [current, album?.title, next, previous, seek]);
+  }, [current, album?.title, album?.coverUrl, next, previous, seek]);
   useEffect(() => {
     if ("mediaSession" in navigator)
       navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
@@ -219,22 +227,16 @@ export default function AudioPlayer() {
           role="region"
           aria-label="Очередь воспроизведения"
         >
-          <div className="queue-heading">
-            <h2>Очередь треков</h2>
-            <button
-              className="icon-button"
-              aria-label="Закрыть очередь"
-              onClick={() => {
-                setQueueOpen(false);
-                queueButtonRef.current?.focus();
-              }}
-            >
-              <X />
-            </button>
-          </div>
-          <p className="meta">
-            После последнего трека — случайный трек из каталога.
-          </p>
+          <button
+            className="icon-button queue-close"
+            aria-label="Закрыть очередь"
+            onClick={() => {
+              setQueueOpen(false);
+              queueButtonRef.current?.focus();
+            }}
+          >
+            <X />
+          </button>
           {queue.length ? (
             <ol>
               {queue.map((track, index) => (
@@ -311,20 +313,10 @@ export default function AudioPlayer() {
           <span className="player-time">{formatTime(currentTime)}</span>
           <div className="player-wave">
             {current ? (
-              <Waveform key={current.audioUrl} track={current} height={34} />
+              <Waveform key={current.audioUrl} track={current} height={44} />
             ) : (
               <div className="idle-wave">ТРЕК ПОКА НЕ ВЫБРАН</div>
             )}
-            <input
-              aria-label="Позиция воспроизведения"
-              type="range"
-              min="0"
-              max={duration || 1}
-              step="0.1"
-              value={Math.min(currentTime, duration || 1)}
-              disabled={!duration}
-              onChange={(event) => seek(Number(event.target.value))}
-            />
           </div>
           <span className="player-time">{formatTime(duration)}</span>
         </div>
@@ -352,7 +344,7 @@ export default function AudioPlayer() {
           {current ? (
             <>
               <Link to={`/beats/${current.id}`} className="player-art">
-                <Artwork src={current.coverUrl} title={current.title} />
+                <Artwork src={album?.coverUrl || current.coverUrl} title={current.title} />
               </Link>
               <div className="player-titles">
                 <Link to={`/beats/${current.id}`}>{current.title}</Link>

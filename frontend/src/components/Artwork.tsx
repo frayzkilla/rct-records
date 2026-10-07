@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Crown from "./Crown";
 
 export default function Artwork({
   src,
@@ -25,8 +24,11 @@ export default function Artwork({
       role="img"
       aria-label={title}
     >
-      <Crown />
-      <span>RAW / SOUND</span>
+      <div className="artwork-type" aria-hidden="true">
+        <span className="artwork-echo artwork-echo-top">{title}</span>
+        <span className="artwork-name">{title}</span>
+        <span className="artwork-echo artwork-echo-bottom">{title}</span>
+      </div>
     </div>
   );
 }

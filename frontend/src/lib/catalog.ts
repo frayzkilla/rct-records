@@ -36,7 +36,16 @@ export function useCatalog() {
         api<Artist[]>("/artists"),
         api<Album[]>("/albums"),
       ]);
-      return { tracks, artists, albums };
+      return {
+        tracks: tracks.map((track) => ({
+          ...track,
+          coverUrl:
+            albums.find((album) => album.id === track.albumId)?.coverUrl ||
+            track.coverUrl,
+        })),
+        artists,
+        albums,
+      };
     },
     staleTime: 60_000,
   });

@@ -26,7 +26,7 @@ export default function TrackCard({
         className="play-button"
         aria-label={`${active && playing ? "Пауза" : "Слушать"}: ${track.title}`}
         disabled={!track.audioUrl}
-        onClick={() => (active ? toggle() : play(track, queue))}
+        onClick={() => (active && playing ? toggle() : play(track, queue))}
       >
         {active && playing ? (
           <Pause size={20} fill="currentColor" />
@@ -35,7 +35,7 @@ export default function TrackCard({
         )}
       </button>
       <Link to={`/beats/${track.id}`} className="track-art">
-        <Artwork src={track.coverUrl} title={track.title} />
+        <Artwork src={album?.coverUrl || track.coverUrl} title={track.title} />
       </Link>
       <div className="track-info">
         <Link className="track-title" to={`/beats/${track.id}`}>

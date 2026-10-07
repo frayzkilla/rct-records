@@ -48,12 +48,12 @@ export default function Waveform({
         instance = WaveSurfer.create({
           container: element,
           height,
-          barWidth: 2,
-          barGap: 2,
+          barWidth: 1,
+          barGap: 1,
           waveColor: "#77736d",
           progressColor: accent,
           cursorColor: accent,
-          cursorWidth: 2,
+          cursorWidth: 1,
           normalize: true,
           interact: false,
         });
@@ -64,7 +64,7 @@ export default function Waveform({
           if (!saved) {
             if (cache.size >= 50) cache.delete(cache.keys().next().value!);
             cache.set(track.audioUrl, {
-              peaks: instance.exportPeaks({ maxLength: 1000 }),
+              peaks: instance.exportPeaks({ maxLength: 16000, precision: 10000 }),
               duration: instance.getDuration(),
             });
           }
@@ -111,9 +111,11 @@ export default function Waveform({
 
   const seek = (fraction: number) => {
     const instance = wave.current;
-    if (!instance?.getDuration()) return;
     const state = usePlayerStore.getState();
-    const time = fraction * instance.getDuration();
+    const duration = instance?.getDuration() ||
+      (state.current?.id === track.id ? state.duration : 0);
+    if (!duration) return;
+    const time = fraction * duration;
     if (state.current?.id === track.id) state.seek(time);
     else state.play(track, queueRef.current, time);
   };
@@ -140,7 +142,8 @@ export default function Waveform({
         if (["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) {
           event.preventDefault();
           const state = usePlayerStore.getState();
-          const duration = wave.current?.getDuration() ?? 0;
+          const duration = wave.current?.getDuration() ||
+            (state.current?.id === track.id ? state.duration : 0);
           const time = state.current?.id === track.id ? state.currentTime : 0;
           seek(
             event.key === "Home"

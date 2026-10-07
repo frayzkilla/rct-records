@@ -37,7 +37,7 @@ def track_view(item: Track):
         "id": item.id, "title": item.title, "artistId": item.artistId, "albumId": item.albumId,
         "producer": item.artist.name if item.artist else "", "artist": item.artist.name if item.artist else "",
         "audioUrl": public_url(item.audioUrl),
-        "coverUrl": public_url(item.coverUrl or (item.album.coverUrl if item.album else None)),
+        "coverUrl": public_url((item.album.coverUrl if item.album else None) or item.coverUrl),
     }
 
 
