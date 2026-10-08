@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { api, ApiError, jsonRequest } from "../lib/api";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, LogOut, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowUpRight, ChartNoAxesCombined, LogOut, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type Account = {
   id: number;
@@ -585,6 +586,10 @@ export default function AdminPage() {
                 : "Все записи и участники"}
             </span>
           </div>
+          <Link to="/stats" className="button button-outline admin-button">
+            <ChartNoAxesCombined size={16} />
+            Статистика
+          </Link>
           <button
             onClick={logout}
             disabled={busy}

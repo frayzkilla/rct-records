@@ -7,6 +7,7 @@ const god = { id: 1, username: "god-admin", role: "god", artistId: null };
 const artistAccount = { id: 2, username: "artist-account", role: "artist", artistId: 1 };
 
 async function publicCatalog(page: Page) {
+  await page.route("**/api/analytics/events", (route) => route.fulfill({ status: 204 }));
   for (const collection of ["beats", "albums", "artists"]) {
     await page.route(`**/api/${collection}`, (route) => route.fulfill({ json: [] }));
   }
@@ -56,7 +57,8 @@ for (const width of [320, 768, 1440]) {
     });
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/admin");
-    await expect(page.getByRole("heading", { name: "Your studio." })).toBeVisible();
+    await expect(page.locator(".admin-workspace")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Статистика", exact: true })).toBeVisible();
     const tabs = page.getByRole("navigation", { name: "Разделы админки" });
     await expect(tabs.getByRole("button")).toHaveCount(4);
     await page.getByRole("button", { name: `Редактировать: ${track.title}`, exact: true }).click();
@@ -115,8 +117,9 @@ test("expressive typography uses upright fonts across about and artists", async 
   await publicCatalog(page);
   for (const route of ["/about", "/artists"]) {
     await page.goto(route);
-    await expect(page.locator("em").first()).toBeVisible();
-    const styles = await page.locator("em").evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontStyle));
+    const typography = page.locator(route === "/about" ? "em" : ".page-heading h1");
+    await expect(typography.first()).toBeVisible();
+    const styles = await typography.evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).fontStyle));
     expect(styles.length).toBeGreaterThan(0);
     expect(styles.every((style) => style === "normal")).toBe(true);
   }

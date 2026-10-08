@@ -1,5 +1,8 @@
 import type { RouteObject } from "react-router-dom";
 
+import { lazy } from "react";
+const Stats = lazy(() => import("../pages/Stats"));
+
 import Home from "../pages/Home";
 import MainLayout from "../layouts/MainLayout";
 import Artists from "../pages/Artists";
@@ -17,6 +20,7 @@ export const useRoutesConfig = (): RouteObject[] => {
       path: "/",
       element: <MainLayout />,
       children: [
+        { path: "stats", element: <Stats /> },
         { path: "artists/:id", element: <EntityPage kind="artist" /> },
         { path: "albums/:id", element: <EntityPage kind="album" /> },
         { path: "beats/:id", element: <EntityPage kind="track" /> },

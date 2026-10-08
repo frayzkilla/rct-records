@@ -11,6 +11,7 @@ type PlayerState = {
   duration: number;
   volume: number;
   seekTarget: { time: number; serial: number };
+  playbackSerial: number;
   error: string;
   play: (track: Track, queue?: Track[], time?: number) => void;
   toggle: () => void;
@@ -29,10 +30,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   volume: 0.8,
   seekTarget: { time: 0, serial: 0 },
+  playbackSerial: 0,
   error: "",
   play: (current, queue, time = 0) =>
     set((state) => ({
       current,
+      playbackSerial: state.playbackSerial + 1,
       queue: (queue ?? state.queue).filter((track) => track.audioUrl),
       isPlaying: true,
       error: "",

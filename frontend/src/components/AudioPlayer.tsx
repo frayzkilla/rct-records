@@ -12,11 +12,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCatalog, formatTime } from "../lib/catalog";
 import { usePlayerStore } from "../store/AudioPlayerStore";
+import { recordPlay } from "../lib/analytics";
 import Artwork from "./Artwork";
 import Waveform from "./Waveform";
 import LikeButton from "./LikeButton";
 
 export default function AudioPlayer() {
+  const countedPlayback = useRef<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [queueOpen, setQueueOpen] = useState(false);
   const [buffering, setBuffering] = useState(false);
@@ -206,7 +208,17 @@ export default function AudioPlayer() {
           })
         }
         onEnded={next}
-        onPlaying={() => setBuffering(false)}
+        onPlaying={(event) => {
+          setBuffering(false);
+          const state = usePlayerStore.getState();
+          if (!state.current || !state.isPlaying) return;
+          if (event.currentTarget.currentSrc !== new URL(state.current.audioUrl, window.location.href).href) return;
+          const playback = `${state.current.id}:${state.playbackSerial}`;
+          if (countedPlayback.current !== playback) {
+            countedPlayback.current = playback;
+            recordPlay(state.current.id);
+          }
+        }}
         onCanPlay={() => setBuffering(false)}
         onWaiting={() => setBuffering(true)}
         onPause={() => setBuffering(false)}

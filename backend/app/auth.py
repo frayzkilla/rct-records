@@ -8,6 +8,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from .analytics import audit
 from .config import COOKIE_SECURE, SESSION_HOURS
 from .database import get_db
 from .models import Admin, AdminSession, Artist
@@ -41,6 +42,7 @@ def login(body: Login, request: Request, response: Response, db: Session = Depen
     token = secrets.token_urlsafe(48)
     db.execute(delete(AdminSession).where(AdminSession.expires_at <= utc_now()))
     db.add(AdminSession(token_hash=token_hash(token), admin_id=admin.id, expires_at=utc_now() + timedelta(hours=SESSION_HOURS)))
+    audit(db, admin, "login")
     db.commit()
     response.set_cookie(COOKIE, token, httponly=True, secure=COOKIE_SECURE, samesite="strict", max_age=SESSION_HOURS * 3600, path="/api")
     return admin_view(admin)
@@ -55,6 +57,10 @@ def me(admin: Admin = Depends(current_admin)):
 def logout(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get(COOKIE)
     if token:
+        session = db.get(AdminSession, token_hash(token))
+        account = db.get(Admin, session.admin_id) if session and session.expires_at > utc_now() else None
+        if account:
+            audit(db, account, "logout")
         db.execute(delete(AdminSession).where(AdminSession.token_hash == token_hash(token)))
         db.commit()
     response = Response(status_code=204)
@@ -67,7 +73,8 @@ def list_admins(admin: Admin = Depends(god_admin), db: Session = Depends(get_db)
     return [admin_view(row) for row in db.scalars(select(Admin).order_by(Admin.id))]
 
 
-def save_admin(db: Session, account: Admin):
+def save_admin(db: Session, account: Admin, actor: Admin):
+    audit(db, actor, "update:admin" if account.id else "create:admin")
     db.add(account)
     try:
         db.commit()
@@ -83,7 +90,7 @@ def create_admin(body: AdminCreate, admin: Admin = Depends(god_admin), db: Sessi
         raise HTTPException(404, "Артист не найден")
     if len(body.username) > 100:
         raise HTTPException(422, "Логин слишком длинный")
-    return save_admin(db, Admin(username=body.username, password_hash=passwords.hash(body.password), artist_id=body.artistId, role="artist"))
+    return save_admin(db, Admin(username=body.username, password_hash=passwords.hash(body.password), artist_id=body.artistId, role="artist"), admin)
 
 
 @router.put("/admins/{account_id}")
@@ -107,7 +114,7 @@ def update_admin(account_id: int, body: AdminUpdate, admin: Admin = Depends(god_
     if "password" in changes:
         account.password_hash = passwords.hash(body.password)
     db.execute(delete(AdminSession).where(AdminSession.admin_id == account.id))
-    return save_admin(db, account)
+    return save_admin(db, account, admin)
 
 
 @router.delete("/admins/{account_id}", status_code=204)
@@ -117,5 +124,6 @@ def delete_admin(account_id: int, admin: Admin = Depends(god_admin), db: Session
         raise HTTPException(404, "Аккаунт не найден")
     if account.role == "god":
         raise HTTPException(403, "Нельзя удалить god-admin")
+    audit(db, admin, "delete:admin")
     db.delete(account)
     db.commit()

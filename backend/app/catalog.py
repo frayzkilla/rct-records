@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile
 
+from .analytics import audit
 from .database import get_db
 from .models import Admin, Album, Artist, Track, TrackLike
 from .schemas import AlbumInput, ArtistInput, TrackInput, TrackLikeInput
@@ -83,8 +84,9 @@ async def payload(request: Request, schema, files: set[str], existing=None):
         raise HTTPException(422, [{"loc": list(row["loc"]), "msg": row["msg"]} for row in error.errors()])
 
 
-async def persist(db: Session, item, values, uploads, mapping):
+async def persist(db: Session, item, values, uploads, mapping, admin):
     created = []
+    action = ("update" if item.id else "create") + ":" + item.__tablename__
     try:
         for key, value in values.model_dump().items():
             setattr(item, key, value)
@@ -92,6 +94,7 @@ async def persist(db: Session, item, values, uploads, mapping):
             attribute, directory = mapping[field]
             setattr(item, attribute, await save_upload(upload, field, created, directory))
         db.add(item)
+        audit(db, admin, action)
         db.commit()
         db.refresh(item)
         return item
@@ -169,21 +172,21 @@ def own_catalog(admin: Admin = Depends(current_admin), db: Session = Depends(get
 @router.post("/artists", status_code=201)
 async def create_artist(request: Request, admin: Admin = Depends(god_admin), db: Session = Depends(get_db)):
     values, uploads = await payload(request, ArtistInput, {"avatar"})
-    return artist_view(await persist(db, Artist(), values, uploads, {"avatar": ("avatarUrl", "artists_images")}))
+    return artist_view(await persist(db, Artist(), values, uploads, {"avatar": ("avatarUrl", "artists_images")}, admin))
 
 
 @router.put("/artists/{item_id}")
 async def update_artist(item_id: int, request: Request, admin: Admin = Depends(god_admin), db: Session = Depends(get_db)):
     item = get_item(db, Artist, item_id)
     values, uploads = await payload(request, ArtistInput, {"avatar"}, item)
-    return artist_view(await persist(db, item, values, uploads, {"avatar": ("avatarUrl", "artists_images")}))
+    return artist_view(await persist(db, item, values, uploads, {"avatar": ("avatarUrl", "artists_images")}, admin))
 
 
 @router.post("/albums", status_code=201)
 async def create_album(request: Request, admin: Admin = Depends(current_admin), db: Session = Depends(get_db)):
     values, uploads = await payload(request, AlbumInput, {"cover"})
     validate_artist(db, admin, values.artistId)
-    return album_view(await persist(db, Album(), values, uploads, {"cover": ("coverUrl", "albums")}))
+    return album_view(await persist(db, Album(), values, uploads, {"cover": ("coverUrl", "albums")}, admin))
 
 
 @router.put("/albums/{item_id}")
@@ -194,7 +197,7 @@ async def update_album(item_id: int, request: Request, admin: Admin = Depends(cu
     validate_artist(db, admin, values.artistId)
     if any(track.artistId != values.artistId for track in item.tracks):
         raise HTTPException(422, "Сначала перенесите треки из альбома")
-    return album_view(await persist(db, item, values, uploads, {"cover": ("coverUrl", "albums")}))
+    return album_view(await persist(db, item, values, uploads, {"cover": ("coverUrl", "albums")}, admin))
 
 
 @router.post("/beats", status_code=201)
@@ -204,7 +207,7 @@ async def create_track(request: Request, admin: Admin = Depends(current_admin), 
     validate_album(db, values.albumId, values.artistId)
     if "audio" not in uploads:
         raise HTTPException(422, "Добавьте аудиофайл")
-    return track_view(await persist(db, Track(), values, uploads, {"audio": ("audioUrl", "tracks"), "cover": ("coverUrl", "covers")}))
+    return track_view(await persist(db, Track(), values, uploads, {"audio": ("audioUrl", "tracks"), "cover": ("coverUrl", "covers")}, admin))
 
 
 @router.put("/beats/{item_id}")
@@ -214,11 +217,12 @@ async def update_track(item_id: int, request: Request, admin: Admin = Depends(cu
     values, uploads = await payload(request, TrackInput, {"audio", "cover"}, item)
     validate_artist(db, admin, values.artistId)
     validate_album(db, values.albumId, values.artistId)
-    return track_view(await persist(db, item, values, uploads, {"audio": ("audioUrl", "tracks"), "cover": ("coverUrl", "covers")}))
+    return track_view(await persist(db, item, values, uploads, {"audio": ("audioUrl", "tracks"), "cover": ("coverUrl", "covers")}, admin))
 
 
 @router.delete("/artists/{item_id}", status_code=204)
 def delete_artist(item_id: int, admin: Admin = Depends(god_admin), db: Session = Depends(get_db)):
+    audit(db, admin, "delete:artist")
     db.delete(get_item(db, Artist, item_id))
     db.commit()
 
@@ -227,6 +231,7 @@ def delete_artist(item_id: int, admin: Admin = Depends(god_admin), db: Session =
 def delete_album(item_id: int, admin: Admin = Depends(current_admin), db: Session = Depends(get_db)):
     item = get_item(db, Album, item_id)
     check_owner(admin, item.artistId)
+    audit(db, admin, "delete:" + item.__tablename__)
     db.delete(item)
     db.commit()
 
@@ -235,5 +240,6 @@ def delete_album(item_id: int, admin: Admin = Depends(current_admin), db: Sessio
 def delete_track(item_id: int, admin: Admin = Depends(current_admin), db: Session = Depends(get_db)):
     item = get_item(db, Track, item_id)
     check_owner(admin, item.artistId)
+    audit(db, admin, "delete:" + item.__tablename__)
     db.delete(item)
     db.commit()

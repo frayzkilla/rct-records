@@ -120,6 +120,7 @@ async function mockCatalog(page: Page, empty = false) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/analytics/events", (route) => route.fulfill({ status: 204 }));
   await mockCatalog(page);
 });
 

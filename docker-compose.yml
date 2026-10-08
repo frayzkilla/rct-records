@@ -15,6 +15,7 @@ services:
   backend:
     build: ./backend
     environment:
+      METRICS_COLLECTOR_URL: http://metrics:9101
       DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME:-postgres}
@@ -29,6 +30,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - app-network
+
+  metrics:
+    build: ./backend
+    command: ["python", "-m", "app.metrics_collector"]
+    restart: unless-stopped
+    read_only: true
+    environment:
+      HOST_PROC: /host/proc
+      HOST_ROOT: /host/root
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/sys:ro
+      - /:/host/root:ro
     networks:
       - app-network
 

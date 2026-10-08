@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
@@ -7,7 +8,9 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 
-from . import auth, catalog
+from . import analytics, auth, catalog, stats_server
+from .analytics_models import AnalyticsState
+from .security import utc_now
 from .body_limit import BodyLimitMiddleware
 from .config import ALLOWED_ORIGINS, GOD_PASSWORD, STORAGE
 from .database import Base, SessionLocal, engine
@@ -24,7 +27,16 @@ async def lifespan(app: FastAPI):
                 raise RuntimeError("Set GOD_ADMIN_PASSWORD to bootstrap god-admin")
             db.add(Admin(username="god-admin", password_hash=passwords.hash(GOD_PASSWORD), role="god"))
             db.commit()
-    yield
+        if db.get(AnalyticsState, 1) is None:
+            db.add(AnalyticsState(id=1, started_at=utc_now()))
+            db.commit()
+    maintenance = asyncio.create_task(analytics.maintain_history())
+    try:
+        yield
+    finally:
+        maintenance.cancel()
+        with suppress(asyncio.CancelledError):
+            await maintenance
 
 
 app = FastAPI(title="Raw Crownz Records API", lifespan=lifespan)
@@ -40,6 +52,8 @@ async def verify_origin(request: Request, call_next):
         if (origin and origin not in ALLOWED_ORIGINS and not same_host) or request.headers.get("sec-fetch-site") == "cross-site":
             return JSONResponse({"detail": "Недопустимый источник запроса"}, status_code=403)
     response = await call_next(request)
+    if request.url.path.startswith("/api/stats"):
+        response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
     if request.url.path.startswith("/api/auth") or request.url.path.startswith("/api/admin"):
         response.headers["Cache-Control"] = "no-store"
@@ -51,6 +65,8 @@ def health():
     return {"status": "ok"}
 
 
+app.include_router(analytics.router)
+app.include_router(stats_server.router)
 app.include_router(auth.router)
 app.include_router(catalog.router)
 for directory in ("tracks", "covers", "albums", "artists_images"):
