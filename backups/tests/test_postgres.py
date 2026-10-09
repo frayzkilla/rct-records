@@ -43,7 +43,7 @@ def test_real_snapshot_dump_and_restore(tmp_path, monkeypatch):
         "BACKUP_WORKDIR": str(tmp_path / "work"), "STORAGE_PATH": str(tmp_path / "storage"),
         "DB_HOST": connection.get("host", "localhost"), "DB_PORT": connection.get("port", "5432"),
         "DB_USERNAME": connection.get("user", "postgres"), "DB_PASSWORD": connection.get("password", ""),
-        "DB_DATABASE": database, "TELEGRAM_BOT_TOKEN": "123:test", "TELEGRAM_CHAT_ID": "1",
+        "DB_DATABASE": database, "VK_ACCESS_TOKEN": "123:test", "VK_PEER_ID": "1",
     }.items():
         monkeypatch.setenv(key, value)
     service = backup.BackupService()

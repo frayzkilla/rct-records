@@ -22,7 +22,8 @@ import psycopg
 logger = logging.getLogger("backups")
 logging.getLogger("httpx").setLevel(logging.CRITICAL)
 logging.getLogger("httpcore").setLevel(logging.CRITICAL)
-CHUNK_BYTES = 49_000_000
+CHUNK_BYTES = 190_000_000
+MESSAGE_CHARS = 4000
 AUDIO = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"}
 IMAGES = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"}
 
@@ -195,44 +196,99 @@ def run_command(command, env=None):
         raise RuntimeError(f"{Path(command[0]).name} выдал предупреждение; бэкап не принят")
 
 
-class Telegram:
-    def __init__(self, token, chat_id):
-        self.base_url = f"https://api.telegram.org/bot{token}/"
-        self.chat_id = str(chat_id)
+class VK:
+    def __init__(self, token, peer_id):
+        self.token = token
+        self.peer_id = peer_id
+        self.client = httpx.Client(timeout=httpx.Timeout(900, connect=30), trust_env=False)
 
     def request(self, method, data, path=None):
         for attempt in range(3):
             delay = 2 ** (attempt + 1)
             try:
-                with httpx.Client(timeout=httpx.Timeout(900, connect=30), trust_env=False) as client:
-                    with contextlib.ExitStack() as stack:
-                        files = None
-                        if path:
-                            source = stack.enter_context(path.open("rb"))
-                            files = {"document": (path.name, source, "application/octet-stream")}
-                        response = client.post(self.base_url + method, data={"chat_id": self.chat_id, **data}, files=files)
+                with contextlib.ExitStack() as stack:
+                    files = None
+                    if path:
+                        source = stack.enter_context(path.open("rb"))
+                        files = {"file": (path.name + ".bin", source, "application/octet-stream")}
+                    url = method if path else "https://api.vk.com/method/" + method
+                    payload = data if path else {"access_token": self.token, "v": "5.199", **data}
+                    response = self.client.post(url, files=files) if path else self.client.post(url, data=payload)
                 try:
                     body = response.json()
                 except ValueError:
                     body = {}
-                code = body.get("error_code", response.status_code)
-                if response.is_success and body.get("ok"):
-                    return body["result"]
-                if code == 429:
-                    delay = max(delay, int(body.get("parameters", {}).get("retry_after", delay)))
-                elif code < 500:
-                    raise RuntimeError(f"Telegram отклонил запрос: код {code}")
+                if not isinstance(body, dict):
+                    body = {}
+                error = body.get("error")
+                if response.is_success and not error:
+                    if path and isinstance(body.get("file"), str) and body["file"]:
+                        return body
+                    if not path and "response" in body:
+                        return body["response"]
+                code = error.get("error_code") if isinstance(error, dict) else None
+                if response.status_code == 429:
+                    retry_after = response.headers.get("Retry-After", "")
+                    if retry_after.isdigit():
+                        delay = max(delay, int(retry_after))
+                elif response.is_success and code in {1, 6, 9, 10, 29}:
+                    pass
+                elif path and error in ("no_file_no_tmp_dir", "internal_error"):
+                    if attempt < 2:
+                        method = self.upload_url()
+                elif response.status_code < 500 and (code is not None or not response.is_success or error):
+                    reason = {
+                        5: "ключ доступа недействителен", 7: "недостаточно прав ключа: нужны messages и docs",
+                        15: "доступ запрещён", 200: "нет доступа к документу или действию",
+                        901: "пользователь не разрешил сообщения сообщества",
+                        902: "сообщения запрещены настройками приватности",
+                    }.get(code, "запрос отклонён")
+                    if path and error == "wrong_arch_file":
+                        reason = "сервер отклонил формат архива"
+                    operation = "загрузка документа" if path else method
+                    raise RuntimeError(f"VK {operation}: {reason} (код {code if code is not None else response.status_code})")
             except httpx.TransportError:
                 pass
             if attempt < 2:
                 time.sleep(delay)
-        raise RuntimeError("Telegram недоступен после трёх попыток")
+        raise RuntimeError("VK недоступен или вернул некорректный ответ после трёх попыток")
 
-    def document(self, path, caption):
-        return self.request("sendDocument", {"caption": caption}, path)
+    def upload_document(self, path):
+        if path.stat().st_size > CHUNK_BYTES:
+            raise RuntimeError("Файл превышает допустимый размер части бэкапа VK")
+        uploaded = self.request(self.upload_url(), {}, path)
+        saved = self.request("docs.save", {"file": uploaded["file"], "title": path.name})
+        document = saved.get("doc") if isinstance(saved, dict) else None
+        if not isinstance(document, dict) or not isinstance(document.get("owner_id"), int) or not isinstance(document.get("id"), int):
+            raise RuntimeError("VK не подтвердил сохранение документа")
+        attachment = f"doc{document['owner_id']}_{document['id']}"
+        if document.get("access_key"):
+            attachment += "_" + document["access_key"]
+        return attachment
 
-    def message(self, text):
-        return self.request("sendMessage", {"text": text})
+    def upload_url(self):
+        server = self.request("docs.getMessagesUploadServer", {"peer_id": self.peer_id, "type": "doc"})
+        upload_url = server.get("upload_url") if isinstance(server, dict) else None
+        if not isinstance(upload_url, str) or urlsplit(upload_url).scheme != "https":
+            raise RuntimeError("VK вернул некорректный адрес загрузки")
+        return upload_url
+
+    def document(self, path, caption, random_id=None, attachment=None):
+        attachment = attachment or self.upload_document(path)
+        return self.message(caption, random_id, attachment)
+
+    def message(self, text, random_id=None, attachment=None):
+        data = {"peer_id": self.peer_id, "random_id": random_id or new_random_id(), "message": text}
+        if attachment:
+            data["attachment"] = attachment
+        result = self.request("messages.send", data)
+        if not isinstance(result, int) or result <= 0:
+            raise RuntimeError("VK не подтвердил отправку сообщения")
+        return {"message_id": result}
+
+
+def new_random_id():
+    return (uuid4().int & 0x7fffffff) or 1
 
 
 def size_label(value):
@@ -260,10 +316,12 @@ def make_report(job, previous_likes):
         "Изменение лайков включает снятые лайки и удалённые треки.",
         "",
         "Архивы и SHA-256:",
+        "VK скачивает файлы как .bin; перед восстановлением верните исходные имена из подписей и списка ниже.",
     ]
     for item in job["archives"]:
         lines.extend([f"{item['name']} ({size_label(item['bytes'])})", item["sha256"]])
         if len(item["parts"]) > 1:
+            lines.append("Части: " + ", ".join(item["parts"]))
             lines.append(f"Склеить на Linux: cat {item['name']}.part* > {item['name']}")
     return "\n".join(lines)
 
@@ -273,7 +331,7 @@ class BackupService:
         self.root = Path(os.getenv("BACKUP_WORKDIR", "/backups")).absolute()
         self.storage = Path(os.getenv("STORAGE_PATH", "/storage")).absolute()
         self.zone = ZoneInfo(os.getenv("BACKUP_TIMEZONE", "Etc/UTC"))
-        clock = datetime.strptime(os.getenv("BACKUP_TIME", "10:00"), "%H:%M")
+        clock = datetime.strptime(os.getenv("BACKUP_TIME", "13:10"), "%H:%M")
         self.hour, self.minute = clock.hour, clock.minute
         self.connection = {
             "host": os.getenv("DB_HOST", "db"),
@@ -283,10 +341,16 @@ class BackupService:
             "dbname": os.getenv("DB_DATABASE", "rawcrownz"),
             "connect_timeout": 30,
         }
-        token = os.environ["TELEGRAM_BOT_TOKEN"].strip()
+        token = os.getenv("VK_ACCESS_TOKEN", "").strip()
         if not token:
-            raise RuntimeError("TELEGRAM_BOT_TOKEN не задан")
-        self.telegram = Telegram(token, int(os.environ["TELEGRAM_CHAT_ID"]))
+            raise RuntimeError("VK_ACCESS_TOKEN не задан")
+        try:
+            peer_id = int(os.getenv("VK_PEER_ID", "167148265"))
+        except ValueError:
+            raise RuntimeError("VK_PEER_ID должен быть числовым ID пользователя") from None
+        if peer_id <= 0:
+            raise RuntimeError("VK_PEER_ID должен быть положительным ID пользователя")
+        self.vk = VK(token, peer_id)
 
     @property
     def state_path(self):
@@ -379,18 +443,39 @@ class BackupService:
     def deliver(self, job):
         directory = self.job_path(job["id"])
         journal = directory / "job.json"
+        destination = {"transport": "vk", "peer_id": self.vk.peer_id}
+        if job.get("destination") != destination:
+            job.update(destination=destination, sent={}, report_sent=False, report_messages=[])
+            for item in job["documents"]:
+                item.pop("attachment", None)
+                item["random_id"] = new_random_id()
+        if not job.get("report_messages"):
+            job["report_messages"] = [
+                {"text": job["report"][offset:offset + MESSAGE_CHARS], "random_id": new_random_id()}
+                for offset in range(0, len(job["report"]), MESSAGE_CHARS)
+            ]
+        write_json(journal, job)
         for item in job["documents"]:
             if item["name"] in job["sent"]:
                 continue
             path = directory / item["name"]
             if path.parent != directory or path.stat().st_size != item["bytes"] or sha256(path) != item["sha256"]:
                 raise RuntimeError("Локальная часть бэкапа повреждена")
-            result = self.telegram.document(path, item["caption"])
+            if not item.get("attachment"):
+                item["attachment"] = self.vk.upload_document(path)
+                write_json(journal, job)
+            result = self.vk.document(path, item["caption"], item["random_id"], item["attachment"])
             job["sent"][item["name"]] = result["message_id"]
             write_json(journal, job)
             time.sleep(1.1)
         if not job["report_sent"]:
-            self.telegram.message(job["report"])
+            for message in job["report_messages"]:
+                if "message_id" in message:
+                    continue
+                result = self.vk.message(message["text"], message["random_id"])
+                message["message_id"] = result["message_id"]
+                write_json(journal, job)
+                time.sleep(1.1)
             job["report_sent"] = True
             write_json(journal, job)
 
@@ -441,7 +526,7 @@ class BackupService:
                 notice_key = scheduled_date or (job["id"] if job else "manual")
                 if state.get("error_notified_for") != notice_key:
                     try:
-                        self.telegram.message(f"Бэкап не завершён: {category}.\nПодтверждённые отправки сохранены. Проверьте docker compose logs backups.")
+                        self.vk.message(f"Бэкап не завершён: {category}.\nПодтверждённые отправки сохранены. Проверьте docker compose logs backups.")
                         state["error_notified_for"] = notice_key
                     except Exception:
                         pass
