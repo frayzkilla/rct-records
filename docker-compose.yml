@@ -49,6 +49,33 @@ services:
     networks:
       - app-network
 
+  backups:
+    build: ./backups
+    restart: unless-stopped
+    read_only: true
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      DB_DATABASE: ${DB_DATABASE:-rawcrownz}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?Set TELEGRAM_BOT_TOKEN in .env}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-446597696}
+      BACKUP_TIME: ${BACKUP_TIME:-10:00}
+      BACKUP_TIMEZONE: ${BACKUP_TIMEZONE:-Etc/UTC}
+      BACKUP_WORKDIR: /backups
+      STORAGE_PATH: /storage
+    volumes:
+      - ./storage:/storage:ro
+      - backup-data:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - app-network
+
   db:
     image: postgres:15-alpine
     volumes:
@@ -67,6 +94,7 @@ services:
 
 volumes:
   postgres-data:
+  backup-data:
 
 networks:
   app-network:
